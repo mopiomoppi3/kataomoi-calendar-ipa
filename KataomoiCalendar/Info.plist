@@ -16,7 +16,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>ja</string>
     <key>CFBundleDisplayName</key>
-    <string>片思いカレンダー</string>
+    <string>恋ログ</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -35,6 +35,8 @@
     <true/>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>ダッシュボードの天気を表示するために現在地を使います</string>
+    <key>NSSupportsLiveActivities</key>
+    <true/>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>

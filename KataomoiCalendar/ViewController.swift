@@ -154,18 +154,19 @@ struct Person: Identifiable, Codable, Hashable {
     var icon: String?
     var song: String?
     var mutual: String?
+    var birthday: String?
     var mileDone: Int?
 
     init(id: String, name: String, since: String, met: String? = nil, color: String,
          rel: String? = "片思い", icon: String? = nil, song: String? = nil,
-         mutual: String? = nil, mileDone: Int? = nil) {
+         mutual: String? = nil, birthday: String? = nil, mileDone: Int? = nil) {
         self.id = id; self.name = name; self.since = since; self.met = met
         self.color = color; self.rel = rel; self.icon = icon; self.song = song
-        self.mutual = mutual; self.mileDone = mileDone
+        self.mutual = mutual; self.birthday = birthday; self.mileDone = mileDone
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, since, met, color, rel, icon, song, mutual, mileDone
+        case id, name, since, met, color, rel, icon, song, mutual, birthday, mileDone
     }
 
     init(from decoder: Decoder) throws {
@@ -179,6 +180,7 @@ struct Person: Identifiable, Codable, Hashable {
         icon = try c.decodeIfPresent(String.self, forKey: .icon)
         song = try c.decodeIfPresent(String.self, forKey: .song)
         mutual = try c.decodeIfPresent(String.self, forKey: .mutual)
+        birthday = try c.decodeIfPresent(String.self, forKey: .birthday)
         mileDone = try c.decodeIfPresent(Int.self, forKey: .mileDone)
     }
 }
@@ -352,6 +354,7 @@ final class CalendarStore: ObservableObject {
     @Published var themeKey: AppThemeKey
     @Published var celebration: Celebration?
     @Published var milestoneText: String?
+    @Published var birthdayText: String?
     @Published var calendarPersonID: String?
     @Published var pendingDay: String?
 
@@ -419,9 +422,9 @@ final class CalendarStore: ObservableObject {
         save()
     }
 
-    func addPerson(name: String, since: String, met: String?, color: String, rel: String, icon: String?) {
+    func addPerson(name: String, since: String, met: String?, color: String, rel: String, birthday: String?, icon: String?) {
         let p = Person(id: String(Int(Date().timeIntervalSince1970 * 1000)),
-                       name: name, since: since, met: met, color: color, rel: rel, icon: icon)
+                       name: name, since: since, met: met, color: color, rel: rel, birthday: birthday, icon: icon)
         data.persons.append(p)
         calendarPersonID = p.id
         save()
@@ -515,6 +518,41 @@ final class CalendarStore: ObservableObject {
         if changed { save() }
         if !events.isEmpty {
             milestoneText = "好きになってから " + events.joined(separator: "、") + " になりました。"
+        }
+    }
+
+    static func nextBirthday(from birthday: String) -> Date? {
+        guard let b = DateKit.date(from: birthday) else { return nil }
+        let cal = Calendar.current
+        let bc = cal.dateComponents([.month, .day], from: b)
+        let today = cal.startOfDay(for: Date())
+        let thisYear = cal.component(.year, from: Date())
+        func candidate(_ year: Int) -> Date? {
+            var c = DateComponents()
+            c.year = year; c.month = bc.month; c.day = bc.day
+            guard let d = cal.date(from: c) else { return nil }
+            return cal.startOfDay(for: d)
+        }
+        if let c0 = candidate(thisYear), c0 >= today { return c0 }
+        return candidate(thisYear + 1)
+    }
+
+    static func birthdayText(_ birthday: String?) -> String? {
+        guard let birthday, let next = nextBirthday(from: birthday) else { return nil }
+        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date()), to: next).day ?? 0
+        if days == 0 { return "今日が誕生日" }
+        return "誕生日まであと\(days)日"
+    }
+
+    func checkBirthdays() {
+        let names = data.persons.compactMap { person -> String? in
+            guard let b = person.birthday, let bd = DateKit.date(from: b) else { return nil }
+            let bc = Calendar.current.dateComponents([.month, .day], from: bd)
+            let tc = Calendar.current.dateComponents([.month, .day], from: Date())
+            return (bc.month == tc.month && bc.day == tc.day) ? "\(person.name)さん" : nil
+        }
+        if !names.isEmpty {
+            birthdayText = "今日は \(names.joined(separator: "、")) の誕生日です"
         }
     }
 
@@ -627,7 +665,7 @@ struct ContentView: View {
                     .zIndex(10)
             }
         }
-        .task { store.checkMilestones() }
+        .task { store.checkMilestones(); store.checkBirthdays() }
         .alert("記念日おめでとう", isPresented: Binding(
             get: { store.milestoneText != nil },
             set: { if !$0 { store.milestoneText = nil } }
@@ -635,6 +673,14 @@ struct ContentView: View {
             Button("ありがとう") { store.milestoneText = nil }
         } message: {
             Text(store.milestoneText ?? "")
+        }
+        .alert("お誕生日おめでとう", isPresented: Binding(
+            get: { store.birthdayText != nil },
+            set: { if !$0 { store.birthdayText = nil } }
+        )) {
+            Button("ありがとう") { store.birthdayText = nil }
+        } message: {
+            Text(store.birthdayText ?? "")
         }
         .onChange(of: store.data.settings.tabsShow) { _, _ in ensureSelection() }
         .onChange(of: store.data.settings.dash) { _, _ in ensureSelection() }
@@ -850,6 +896,11 @@ struct HomeView: View {
                     Text(CalendarStore.nextMilestoneText(days))
                         .font(.system(.caption, design: .rounded))
                         .foregroundStyle(store.theme.muted)
+                    if let bText = CalendarStore.birthdayText(person.birthday) {
+                        Text(bText)
+                            .font(.system(.caption, design: .rounded).weight(bText == "今日が誕生日" ? .bold : .regular))
+                            .foregroundStyle(bText == "今日が誕生日" ? store.theme.rose : store.theme.muted)
+                    }
                 }
                 Spacer()
             }
@@ -907,6 +958,8 @@ struct AddPersonView: View {
     @State private var since = Date()
     @State private var hasMet = false
     @State private var met = Date()
+    @State private var hasBirthday = false
+    @State private var birthday = Date()
     @State private var rel = "片思い"
     @State private var color = CalendarStore.personColors[0]
     @State private var iconItem: PhotosPickerItem?
@@ -924,6 +977,12 @@ struct AddPersonView: View {
                     Toggle("出会った日を設定", isOn: $hasMet)
                     if hasMet {
                         DatePicker("出会った日", selection: $met, displayedComponents: .date)
+                    }
+                }
+                Section("誕生日（任意）") {
+                    Toggle("誕生日を設定", isOn: $hasBirthday)
+                    if hasBirthday {
+                        DatePicker("誕生日", selection: $birthday, displayedComponents: .date)
                     }
                 }
                 Section("関係") {
@@ -1004,7 +1063,7 @@ struct AddPersonView: View {
         store.addPerson(name: trimmed,
                         since: DateKit.string(from: since),
                         met: hasMet ? DateKit.string(from: met) : nil,
-                        color: color, rel: rel, icon: iconDataURL)
+                        color: color, rel: rel, birthday: hasBirthday ? DateKit.string(from: birthday) : nil, icon: iconDataURL)
         dismiss()
     }
 }
@@ -1203,6 +1262,9 @@ struct CalendarView: View {
                         if person.mutual == ds {
                             mark("両", color: Color(hex: "#e8698a"))
                         }
+                        if let b = person.birthday, String(b.dropFirst(5)) == String(ds.dropFirst(5)) {
+                            mark("誕", color: Color(hex: "#e8698a"))
+                        }
                     }
                     Spacer()
                 }
@@ -1399,6 +1461,7 @@ struct DaySheet: View {
                             if person.since == date { badge("好きになった日") }
                             if person.met == date { badge("出会った日") }
                             if person.mutual == date { badge("両思いになった日") }
+                            if let b = person.birthday, String(b.dropFirst(5)) == String(date.dropFirst(5)) { badge("誕生日") }
                         }
                     }
                 }
@@ -1627,6 +1690,11 @@ struct StatsView: View {
             }
 
             Text("好きになってから \(DateKit.daysSince(person.since)) 日間" + (person.met.map { " ／ 出会った日: \(DateKit.japanese($0))" } ?? ""))
+            if let birthday = person.birthday {
+                Text("誕生日: \(DateKit.japanese(birthday))" + (CalendarStore.birthdayText(birthday).map { " ／ \($0)" } ?? ""))
+                    .font(.system(.caption, design: .rounded))
+                    .foregroundStyle(store.theme.muted)
+            }
                 .font(.system(.caption, design: .rounded))
                 .foregroundStyle(store.theme.muted)
 
@@ -2383,6 +2451,30 @@ struct PersonSettingsRow: View {
                     .onSubmit {
                         let value = (songDraft ?? "").trimmingCharacters(in: .whitespaces)
                         store.updatePerson(person.id) { $0.song = value.isEmpty ? nil : value }
+                    }
+
+                    HStack {
+                        Text("誕生日")
+                            .font(.system(.subheadline, design: .rounded))
+                            .foregroundStyle(store.theme.sub)
+                        Spacer()
+                        if person.birthday != nil {
+                            DatePicker("", selection: Binding(
+                                get: { DateKit.date(from: person.birthday ?? "") ?? Date() },
+                                set: { store.updatePerson(person.id) { $0.birthday = DateKit.string(from: $0) } }
+                            ), displayedComponents: .date)
+                            .labelsHidden()
+                            Button("外す") {
+                                store.updatePerson(person.id) { $0.birthday = nil }
+                            }
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                        } else {
+                            Button("設定する") {
+                                store.updatePerson(person.id) { $0.birthday = DateKit.todayString() }
+                            }
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .buttonStyle(.glass)
+                        }
                     }
                 }
                 .padding(.vertical, 4)

@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>片思いカレンダー</title>
+<meta name="theme-color" content="#fff5f8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="片思い">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20512%20512%22%20width=%22512%22%20height=%22512%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id=%22bg%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%220%22%20stop-color=%22%23f7b3ca%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset=%221%22%20stop-color=%22%23e8698a%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3Cfilter%20id=%22shadow%22%20x=%22-30%25%22%20y=%22-30%25%22%20width=%22160%25%22%20height=%22170%25%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx=%220%22%20dy=%2212%22%20stdDeviation=%2214%22%20flood-color=%22%238c1f48%22%20flood-opacity=%220.28%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3C!--%20layer%201:%20background%20--%3E%0A%20%20%3Cg%20id=%22layer-background%22%3E%3Crect%20width=%22512%22%20height=%22512%22%20fill=%22url(%23bg)%22/%3E%3C/g%3E%0A%20%20%3C!--%20layer%202:%20heart%20--%3E%0A%20%20%3Cg%20id=%22layer-heart%22%20filter=%22url(%23shadow)%22%3E%0A%20%20%20%20%3Cpath%20d=%22M256%20400%20C%20160%20330,%20108%20274,%20108%20212%20C%20108%20168,%20142%20136,%20184%20136%20C%20214%20136,%20240%20152,%20256%20178%20C%20272%20152,%20298%20136,%20328%20136%20C%20370%20136,%20404%20168,%20404%20212%20C%20404%20274,%20352%20330,%20256%20400%20Z%22%20fill=%22%23ffffff%22/%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E%0A">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────── */
+:root{
+  --rose:#e8698a; --deep:#c0496d; --blush:#f2a7c3;
+  --petal:#fde8f0; --cream:#fff5f8; --card:#ffffffee;
+  --text:#2d1220; --sub:#7a4a5e; --muted:#b088a0;
+  --border:rgba(192,73,109,0.12);
+  --shadow-sm:0 1px 4px rgba(192,73,109,0.08),0 4px 16px rgba(192,73,109,0.10);
+  --shadow-md:0 4px 12px rgba(192,73,109,0.10),0 16px 40px rgba(192,73,109,0.13);
+  --shadow-lg:0 8px 24px rgba(192,73,109,0.12),0 32px 64px rgba(192,73,109,0.18);
+  --g1:rgba(242,167,195,0.16); --g2:rgba(235,210,245,0.18); --g3:rgba(248,215,228,0.12);
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-out:cubic-bezier(0.22,1,0.36,1);
+  --r-sm:12px; --r-md:18px; --r-lg:24px; --r-xl:28px;
+}
+[data-theme=lavender]{
+  --rose:#9b6fd4; --deep:#6e3fa8; --blush:#c9aaee;
+  --petal:#ede4fb; --cream:#f8f4ff; --card:#fdfbffee;
+  --text:#1e1030; --sub:#5a3a8a; --muted:#9a80c0;
+  --border:rgba(110,63,168,0.10);
+  --shadow-sm:0 1px 4px rgba(110,63,168,0.07),0 4px 16px rgba(110,63,168,0.09);
+  --shadow-md:0 4px 12px rgba(110,63,168,0.09),0 16px 40px rgba(110,63,168,0.12);
+  --shadow-lg:0 8px 24px rgba(110,63,168,0.11),0 32px 64px rgba(110,63,168,0.16);
+  --g1:rgba(201,170,238,0.16); --g2:rgba(180,145,230,0.14); --g3:rgba(220,200,250,0.12);
+}
+[data-theme=mint]{
+  --rose:#3daa88; --deep:#1f7a60; --blush:#8ed8c0;
+  --petal:#ddf4ec; --cream:#f2fcf9; --card:#f8fefdee;
+  --text:#082820; --sub:#1a5a48; --muted:#70a898;
+  --border:rgba(31,122,96,0.10);
+  --shadow-sm:0 1px 4px rgba(31,122,96,0.07),0 4px 16px rgba(31,122,96,0.09);
+  --shadow-md:0 4px 12px rgba(31,122,96,0.09),0 16px 40px rgba(31,122,96,0.11);
+  --shadow-lg:0 8px 24px rgba(31,122,96,0.10),0 32px 64px rgba(31,122,96,0.15);
+  --g1:rgba(142,216,192,0.16); --g2:rgba(100,200,170,0.14); --g3:rgba(180,240,220,0.12);
+}
+[data-theme=peach]{
+  --rose:#e88a50; --deep:#c05e28; --blush:#f5c89a;
+  --petal:#fdeede; --cream:#fff8f2; --card:#fffaf6ee;
+  --text:#2d1408; --sub:#8a4010; --muted:#c09060;
+  --border:rgba(192,94,40,0.10);
+  --shadow-sm:0 1px 4px rgba(192,94,40,0.07),0 4px 16px rgba(192,94,40,0.09);
+  --shadow-md:0 4px 12px rgba(192,94,40,0.09),0 16px 40px rgba(192,94,40,0.11);
+  --shadow-lg:0 8px 24px rgba(192,94,40,0.10),0 32px 64px rgba(192,94,40,0.15);
+  --g1:rgba(245,200,154,0.16); --g2:rgba(240,178,128,0.14); --g3:rgba(250,220,180,0.12);
+}
+[data-theme=sky]{
+  --rose:#4a9fd4; --deep:#1a72a8; --blush:#99cff5;
+  --petal:#ddeeff; --cream:#f2f8ff; --card:#f8fcffee;
+  --text:#08182e; --sub:#1a4a78; --muted:#6090c0;
+  --border:rgba(26,114,168,0.10);
+  --shadow-sm:0 1px 4px rgba(26,114,168,0.07),0 4px 16px rgba(26,114,168,0.09);
+  --shadow-md:0 4px 12px rgba(26,114,168,0.09),0 16px 40px rgba(26,114,168,0.11);
+  --shadow-lg:0 8px 24px rgba(26,114,168,0.10),0 32px 64px rgba(26,114,168,0.15);
+  --g1:rgba(153,207,245,0.16); --g2:rgba(130,188,240,0.14); --g3:rgba(180,220,255,0.12);
+}
+
+/* ── RESET ───────────────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Zen Maru Gothic',sans-serif;
+  background:var(--cream); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+  transition:background .5s var(--ease-out),color .5s var(--ease-out);
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 15%,var(--g1),transparent),
+    radial-gradient(ellipse 60% 50% at 85% 85%,var(--g2),transparent),
+    radial-gradient(ellipse 50% 40% at 65% 5%,var(--g3),transparent);
+  transition:background .5s var(--ease-out);
+}
+
+/* ── HEADER — liquid glass ───────────────────────────────────── */
+.header{
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; height:52px; padding:0 16px; gap:10px;
+  background:rgba(255,245,248,0.72);
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  border-bottom:1px solid rgba(255,255,255,0.5);
+  box-shadow:0 1px 0 var(--border);
+}
+[data-theme=lavender] .header{background:rgba(248,244,255,0.72);}
+[data-theme=mint]     .header{background:rgba(242,252,249,0.72);}
+[data-theme=peach]    .header{background:rgba(255,248,242,0.72);}
+[data-theme=sky]      .header{background:rgba(242,248,255,0.72);}
+.header h1{
+  font-family:'Klee One',cursive; font-size:1.18rem; font-weight:600;
+  color:var(--deep); letter-spacing:.04em; flex:1;
+  /* optical: tighten slightly at this size */
+}
+
+/* theme button */
+.theme-wrap{position:relative;}
+.theme-btn{
+  width:30px; height:30px; border-radius:50%; border:2px solid rgba(255,255,255,0.7);
+  background:linear-gradient(135deg,var(--blush),var(--rose));
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px var(--border);
+  transition:transform .18s var(--spring), box-shadow .18s;
+  will-change:transform;
+}
+.theme-btn:active{transform:scale(0.88);transition-duration:.1s;}
+.theme-btn svg{width:14px;height:14px;}
+.theme-panel{
+  position:absolute; top:38px; right:0;
+  background:var(--card);
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  border:1px solid rgba(255,255,255,0.6);
+  border-radius:16px; padding:12px 14px; gap:10px;
+  box-shadow:var(--shadow-md);
+  display:none; flex-direction:column; z-index:200; min-width:138px;
+  transform-origin:top right;
+}
+.theme-panel.open{
+  display:flex;
+  animation:panelIn .22s var(--spring) both;
+}
+@keyframes panelIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+.theme-panel-label{font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+.swatches{display:flex;gap:7px;align-items:center;}
+.swatch{
+  width:20px;height:20px;border-radius:50%;
+  border:2.5px solid transparent; cursor:pointer; outline:none;
+  transition:transform .18s var(--spring),border-color .15s;
+  will-change:transform;
+}
+.swatch:active{transform:scale(.85)!important;}
+.swatch.active{border-color:var(--text);transform:scale(1.22);}
+.sw-pink    {background:linear-gradient(135deg,#f2a7c3,#e8698a);}
+.sw-lavender{background:linear-gradient(135deg,#c9aaee,#9b6fd4);}
+.sw-mint    {background:linear-gradient(135deg,#8ed8c0,#3daa88);}
+.sw-peach   {background:linear-gradient(135deg,#f5c89a,#e88a50);}
+.sw-sky     {background:linear-gradient(135deg,#99cff5,#4a9fd4);}
+
+/* ── BOTTOM TAB BAR — pill style ─────────────────────────────── */
+.tab-bar{
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  z-index:100;
+  display:flex; align-items:center; justify-content:center;
+  height:64px;
+  padding:0 8px;
+  gap:4px;
+  background:rgba(255,245,248,0.82);
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.7);
+  box-shadow:0 4px 24px rgba(192,73,109,0.14), 0 1px 0 rgba(255,255,255,0.5) inset;
+  /* don't stretch full width */
+  width:340px; max-width:calc(100vw - 40px);
+}
+[data-theme=lavender] .tab-bar{background:rgba(248,244,255,0.82);}
+[data-theme=mint]     .tab-bar{background:rgba(242,252,249,0.82);}
+[data-theme=peach]    .tab-bar{background:rgba(255,248,242,0.82);}
+[data-theme=sky]      .tab-bar{background:rgba(242,248,255,0.82);}
+
+.tab-item{
+  flex:1; min-width:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:2px; border:none; cursor:pointer;
+  font-family:'Zen Maru Gothic',sans-serif; font-size:.62rem; font-weight:600; letter-spacing:.02em;
+  color:var(--muted); background:transparent;
+  height:52px; border-radius:999px;
+  padding:0 4px;
+  white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .18s var(--ease-out), background .18s var(--ease-out), box-shadow .18s var(--ease-out), transform .14s var(--spring);
+  will-change:transform;
+}
+.tab-item svg{
+  width:20px; height:20px; stroke-width:1.9; flex-shrink:0;
+  transition:transform .28s var(--spring);
+  will-change:transform;
+}
+.tab-label{
+  /* always visible */
+}
+.tab-item{position:relative;z-index:1;}
+.tab-item.active{color:#fff;}
+/* sliding pill */
+.tab-pill{
+  position:absolute; top:5px; left:0; height:52px; width:0;
+  border-radius:999px; background:var(--rose);
+  box-shadow:0 4px 16px rgba(232,105,138,0.35);
+  pointer-events:none; z-index:0;
+  /* 出だしが速く、終わりでキュッと止まる。反動は小さく短く */
+  transition:
+    left  .32s cubic-bezier(0.14,1.25,0.3,1.0),
+    width .40s cubic-bezier(0.16,1.15,0.3,1.0),
+    background .3s;
+  will-change:left,width;
+}
+.tab-pill.no-anim{transition:none;}
+[data-theme=lavender] .tab-pill{box-shadow:0 4px 16px rgba(155,111,212,0.35);}
+[data-theme=mint]     .tab-pill{box-shadow:0 4px 16px rgba(61,170,136,0.35);}
+[data-theme=peach]    .tab-pill{box-shadow:0 4px 16px rgba(232,138,80,0.35);}
+[data-theme=sky]      .tab-pill{box-shadow:0 4px 16px rgba(74,159,212,0.35);}
+.tab-item.active svg{transform:scale(1.06);}
+.tab-item:active{transform:scale(.91);}
+.tab-item:not(.active):active svg{transform:scale(.84);}
+
+
+/* ── LAYOUT ──────────────────────────────────────────────────── */
+.app{max-width:900px;margin:0 auto;padding:14px 16px 104px;position:relative;z-index:1;}
+.section{display:none;}
+.section.active{display:block;animation:sectionIn .3s var(--ease-out) both;}
+@keyframes sectionIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── CARDS ───────────────────────────────────────────────────── */
+.persons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:14px;}
+.person-card{
+  background:var(--card);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.7);
+  border-radius:var(--r-lg); padding:18px;
+  box-shadow:var(--shadow-sm);
+  cursor:pointer; position:relative; overflow:hidden;
+  transition:transform .22s var(--spring), box-shadow .22s var(--ease-out);
+  will-change:transform;
+}
+.person-card::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:2.5px;
+  background:linear-gradient(90deg,var(--blush),var(--rose));
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+}
+/* instant press feedback on pointerdown */
+.person-card:active{transform:scale(.97);box-shadow:var(--shadow-sm);}
+.person-card.lifted{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+.p-dot{width:26px;height:26px;border-radius:50%;margin-bottom:10px;flex-shrink:0;}
+.p-name{font-weight:700;font-size:.98rem;color:var(--text);letter-spacing:-.01em;}
+.p-since{font-size:.68rem;color:var(--muted);margin-top:3px;}
+.p-days{
+  margin-top:9px; font-size:1.5rem;
+  font-family:'Klee One',cursive; font-weight:600; color:var(--rose);
+  letter-spacing:-.02em; /* tighten large numerals */
+  line-height:1;
+}
+.p-days span{font-size:.62rem;color:var(--muted);font-family:'Zen Maru Gothic',sans-serif;letter-spacing:0;}
+.p-like{font-size:.68rem;color:var(--muted);margin-top:3px;}
+.del-btn{
+  position:absolute;top:10px;right:11px;
+  background:rgba(0,0,0,0);border:none;
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--muted);cursor:pointer;
+  opacity:0;transition:opacity .15s,background .15s,transform .12s var(--spring);
+}
+.person-card:hover .del-btn{opacity:1;}
+.del-btn:active{transform:scale(.82);background:var(--petal);}
+
+/* add new */
+.btn-add-new{
+  width:100%;padding:13px;border-radius:var(--r-md);
+  border:1.5px dashed var(--blush); background:transparent;
+  color:var(--muted); font-family:'Zen Maru Gothic',sans-serif; font-size:.88rem;
+  cursor:pointer;
+  transition:background .18s,color .18s,border-color .18s,transform .14s var(--spring);
+  will-change:transform;
+}
+.btn-add-new:active{transform:scale(.97);}
+.btn-add-new:hover{background:var(--petal);color:var(--rose);border-color:var(--rose);}
+
+/* ── ADD FORM ────────────────────────────────────────────────── */
+.add-card{
+  background:var(--card); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.65);
+  border-radius:var(--r-lg); padding:22px;
+  box-shadow:var(--shadow-md);
+  border-top:1.5px dashed var(--blush);
+  margin-bottom:14px;
+  animation:sectionIn .28s var(--ease-out) both;
+}
+.add-card h2{font-size:.95rem;color:var(--text);margin-bottom:16px;font-weight:600;letter-spacing:-.01em;}
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px;}
+label{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+input[type=text],input[type=date],textarea{
+  border:1.5px solid var(--petal); border-radius:var(--r-sm);
+  padding:9px 12px; font-family:'Zen Maru Gothic',sans-serif; font-size:.87rem;
+  color:var(--text); background:rgba(255,255,255,0.8); outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+input:focus,textarea:focus{
+  border-color:var(--rose);
+  box-shadow:0 0 0 3px rgba(232,105,138,0.12);
+}
+textarea{resize:vertical;min-height:70px;}
+
+/* color picker */
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.color-opt{
+  width:22px;height:22px;border-radius:50%;
+  border:3px solid transparent; cursor:pointer; display:inline-block;
+  transition:transform .18s var(--spring),border-color .15s;
+  will-change:transform;
+}
+.color-opt:active{transform:scale(.82)!important;}
+.color-opt.selected{border-color:var(--text);transform:scale(1.2);}
+
+/* buttons */
+.btn{
+  padding:9px 20px; border-radius:999px; border:none;
+  font-family:'Zen Maru Gothic',sans-serif; font-size:.87rem; font-weight:700;
+  cursor:pointer;
+  transition:transform .15s var(--spring),box-shadow .18s,filter .18s;
+  will-change:transform;
+}
+.btn:active{transform:scale(.94)!important;}
+.btn-primary{background:linear-gradient(135deg,var(--rose),var(--deep));color:#fff;}
+.btn-primary:hover{box-shadow:0 4px 14px var(--border);filter:brightness(1.04);}
+.btn-secondary{background:var(--petal);color:var(--rose);}
+.btn-secondary:hover{background:var(--blush);color:#fff;}
+
+/* range */
+.like-row{display:flex;align-items:center;gap:10px;margin:6px 0;}
+.like-row input[type=range]{flex:1;padding:0;accent-color:var(--rose);border:none;height:4px;cursor:pointer;}
+.like-lbl{font-size:.68rem;color:var(--muted);font-weight:500;}
+.like-val{font-weight:700;color:var(--rose);font-size:.95rem;min-width:26px;text-align:right;font-variant-numeric:tabular-nums;}
+
+/* ── CALENDAR ────────────────────────────────────────────────── */
+.cal-person-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.cal-tab{
+  padding:5px 13px; border-radius:999px;
+  border:1.5px solid var(--blush); background:rgba(255,255,255,0.6);
+  color:var(--sub); font-size:.76rem; font-family:'Zen Maru Gothic',sans-serif;
+  cursor:pointer; display:flex; align-items:center; gap:5px;
+  transition:transform .15s var(--spring),background .16s,color .16s,border-color .16s;
+  will-change:transform;
+}
+.cal-tab:active{transform:scale(.93);}
+.cal-tab.active{color:#fff;}
+.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.nav-btn{
+  width:28px;height:28px;border-radius:50%;
+  border:1.5px solid var(--blush); background:rgba(255,255,255,0.7);
+  color:var(--rose); cursor:pointer; font-size:.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s var(--spring),background .16s,color .16s;
+  will-change:transform;
+}
+.nav-btn:active{transform:scale(.86);}
+.nav-btn:hover{background:var(--rose);color:#fff;border-color:var(--rose);}
+.month-label{
+  font-family:'Klee One',cursive; font-size:.98rem; color:var(--deep);
+  min-width:88px; text-align:center; letter-spacing:.01em;
+}
+
+/* grid */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:10px;}
+.cal-dow{text-align:center;font-size:.6rem;color:var(--muted);padding:3px 0;font-weight:600;letter-spacing:.04em;}
+.cal-dow:first-child{color:#d45050;}
+.cal-dow:last-child {color:#4060c0;}
+.cal-cell{
+  min-height:62px; border-radius:var(--r-sm); padding:4px 5px;
+  background:rgba(255,255,255,0.7);
+  border:1px solid var(--border); cursor:pointer;
+  transition:transform .14s var(--spring),box-shadow .15s,background .15s;
+  position:relative; display:flex; flex-direction:column;
+  will-change:transform;
+}
+.cal-cell:active{transform:scale(.93);box-shadow:var(--shadow-sm);}
+.cal-cell.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none;}
+.cal-cell.today{border-color:var(--rose);background:var(--petal);}
+.cal-cell.has-entry{background:var(--petal);}
+.cal-cell.has-entry::after{
+  content:''; position:absolute; bottom:3px; right:3px;
+  width:5px; height:5px; border-radius:50%; background:var(--rose);
+}
+.cal-date{font-size:.66rem;font-weight:700;color:var(--text);line-height:1;letter-spacing:-.01em;}
+.cal-cell.sun .cal-date{color:#d45050;}
+.cal-cell.sat .cal-date{color:#4060c0;}
+.cal-thumb{width:100%;flex:1;object-fit:cover;border-radius:5px;margin-top:3px;display:block;}
+.cal-like-bar{height:3px;border-radius:999px;background:var(--blush);margin-top:3px;overflow:hidden;}
+.cal-like-fill{height:100%;border-radius:999px;background:var(--rose);}
+.cal-mood-text{font-size:.6rem;color:var(--sub);margin-top:2px;line-height:1.2;}
+.cal-mark{
+  display:inline-block;width:11px;height:11px;border-radius:2px;
+  margin-left:2px;vertical-align:middle;font-size:.48rem;
+  color:#fff;text-align:center;line-height:11px;font-weight:700;
+}
+.cal-legend{display:flex;gap:10px;font-size:.68rem;color:var(--muted);margin-top:2px;flex-wrap:wrap;}
+.cal-legend span{display:flex;align-items:center;gap:4px;}
+
+/* ── DAY MODAL ───────────────────────────────────────────────── */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(20,8,14,.32);
+  backdrop-filter:blur(8px) saturate(120%);
+  -webkit-backdrop-filter:blur(8px) saturate(120%);
+  z-index:400;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 0 env(safe-area-inset-bottom,0);
+}
+.overlay.center{align-items:center;padding:16px;}
+.day-modal{
+  background:var(--card);
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  border:1px solid rgba(255,255,255,0.65);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:20px 20px 32px; width:100%; max-width:500px; max-height:88vh; overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+  /* spring slide-up from bottom */
+  animation:sheetUp .38s var(--spring) both;
+}
+.day-modal.center-modal{border-radius:var(--r-xl);animation:modalPop .3s var(--spring) both;}
+@keyframes sheetUp{from{transform:translateY(100%);opacity:.6}to{transform:none;opacity:1}}
+@keyframes modalPop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 16px;}
+.dm-head{margin-bottom:14px;}
+.dm-head h2{font-family:'Klee One',cursive;font-size:1.05rem;color:var(--text);font-weight:600;letter-spacing:-.01em;}
+.dm-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:4px;
+  padding:3px 10px 3px 6px; border-radius:999px;
+  background:var(--petal); font-size:.72rem; color:var(--rose); font-weight:600;
+}
+.dm-badge .dot{width:8px;height:8px;border-radius:50%;}
+
+/* sections inside modal */
+.esec{margin-bottom:14px;}
+.esec-title{font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;}
+.exist-card{
+  background:rgba(255,255,255,0.6);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:12px;margin-bottom:8px;
+}
+.exist-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.exist-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.exist-mood{font-size:.78rem;color:var(--sub);font-weight:600;}
+.exist-like{font-size:.72rem;color:var(--rose);font-weight:700;}
+.exist-text{font-size:.82rem;line-height:1.65;color:var(--text);}
+.exist-img{width:100%;border-radius:var(--r-sm);margin-top:8px;object-fit:cover;max-height:140px;display:block;}
+.e-del{
+  background:none;border:none;cursor:pointer;
+  font-size:.72rem;color:var(--muted);padding:4px 8px;border-radius:8px;
+  transition:background .15s,color .15s,transform .12s var(--spring);
+  will-change:transform;
+}
+.e-del:active{transform:scale(.88);}
+.e-del:hover{background:var(--petal);color:var(--deep);}
+
+.mood-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.mood-btn{
+  padding:5px 11px;border-radius:999px;
+  border:1.5px solid var(--petal);background:rgba(255,255,255,0.8);
+  font-size:.8rem;font-family:'Zen Maru Gothic',sans-serif;color:var(--sub);
+  cursor:pointer;
+  transition:transform .13s var(--spring),background .15s,border-color .15s;
+  will-change:transform;
+}
+.mood-btn:active{transform:scale(.9);}
+.mood-btn.sel{border-color:var(--rose);background:var(--petal);color:var(--rose);font-weight:600;}
+
+.photo-upload label{
+  display:inline-block;padding:7px 14px;border-radius:999px;
+  border:1.5px solid var(--blush);background:rgba(255,255,255,0.8);color:var(--rose);
+  font-size:.78rem;cursor:pointer;font-family:'Zen Maru Gothic',sans-serif;font-weight:600;
+  transition:transform .13s var(--spring),background .15s;
+  will-change:transform;
+}
+.photo-upload label:active{transform:scale(.94);}
+.photo-upload label:hover{background:var(--petal);}
+.photo-upload input{display:none;}
+
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;}
+
+/* ── STATS ───────────────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:10px;margin-bottom:16px;}
+.stat-card{
+  background:var(--card); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.65);
+  border-radius:var(--r-md); padding:16px;
+  box-shadow:var(--shadow-sm); text-align:center;
+}
+.stat-num{
+  font-family:'Klee One',cursive;font-size:1.9rem;color:var(--deep);
+  font-weight:600;letter-spacing:-.03em;line-height:1;
+}
+.stat-label{font-size:.7rem;color:var(--muted);margin-top:4px;letter-spacing:.01em;}
+.person-stat{
+  background:var(--card); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.65);
+  border-radius:var(--r-md); padding:16px; margin-bottom:10px;
+  box-shadow:var(--shadow-sm);
+}
+.ps-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.ps-name{font-weight:700;color:var(--text);font-size:.93rem;display:flex;align-items:center;gap:7px;}
+.ps-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.ps-days{font-size:.72rem;color:var(--muted);}
+.like-bar{height:5px;border-radius:999px;background:var(--petal);overflow:hidden;margin:8px 0 4px;}
+.like-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blush),var(--rose));transition:width .6s var(--ease-out);}
+
+/* ── EMPTY ───────────────────────────────────────────────────── */
+.empty{text-align:center;padding:48px 20px;color:var(--muted);}
+.empty-line{width:32px;height:2px;background:var(--petal);border-radius:1px;margin:0 auto 14px;}
+.empty p{font-size:.86rem;line-height:1.6;}
+
+/* ── CONFIRM ─────────────────────────────────────────────────── */
+.conf-modal{
+  background:var(--card); backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  border:1px solid rgba(255,255,255,0.65);
+  border-radius:var(--r-xl); padding:24px; max-width:340px; width:100%;
+  box-shadow:var(--shadow-lg); animation:modalPop .28s var(--spring) both;
+}
+.conf-modal h2{font-size:1rem;color:var(--text);margin-bottom:6px;font-weight:600;}
+.conf-modal p{font-size:.8rem;color:var(--muted);margin-bottom:18px;line-height:1.6;}
+
+/* ── v4: blur fix, white theme, header, popover ─────────────── */
+[data-theme=white]{--rose:#1c1c1e;--deep:#000;--blush:#d1d1d6;--petal:#f2f2f7;--cream:#fff;--card:#fffffff0;--text:#1c1c1e;--sub:#5c5c60;--muted:#8e8e93;--border:rgba(0,0,0,.08);--shadow-sm:0 1px 3px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.07),0 16px 40px rgba(0,0,0,.09);--shadow-lg:0 8px 24px rgba(0,0,0,.09),0 32px 64px rgba(0,0,0,.12);--g1:rgba(0,0,0,.03);--g2:rgba(0,0,0,.02);--g3:rgba(0,0,0,.015);}
+[data-theme=white] .tab-pill{box-shadow:0 4px 14px rgba(0,0,0,.22);}
+/* 背景を半透明にして、下のコンテンツが本当にぼけて透けるように */
+.header.header,.tab-bar.tab-bar{background:color-mix(in srgb,var(--cream) 50%,transparent);backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);}
+.hdr-actions{display:flex;gap:8px;align-items:center;}
+.hdr-btn{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.75);background:color-mix(in srgb,var(--cream) 70%,transparent);color:var(--rose);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 6px var(--border);transition:transform .15s var(--spring);}
+.hdr-btn:active{transform:scale(.86);}
+.hdr-btn svg{width:17px;height:17px;}
+.theme-panel{top:42px;min-width:240px;padding:14px;}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 6px;}
+.chip{border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;font-family:inherit;font-size:.64rem;color:var(--sub);transition:transform .15s var(--spring);}
+.chip:active{transform:scale(.9);}
+.chip i{width:34px;height:34px;border-radius:50%;display:block;border:3px solid transparent;box-shadow:0 0 0 1px var(--border) inset;transition:transform .25s var(--spring),border-color .15s;}
+.chip.active i{border-color:var(--text);transform:scale(1.06);}
+.chip.active{color:var(--text);font-weight:600;}
+.c-white{background:#fff;}
+@media (hover:none){.del-btn{opacity:.55;}}
+.today-btn{margin-left:auto;padding:5px 13px;border-radius:999px;border:1.5px solid var(--blush);background:color-mix(in srgb,var(--cream) 70%,transparent);color:var(--rose);font:600 .72rem 'Zen Maru Gothic',sans-serif;cursor:pointer;transition:transform .14s var(--spring);}
+.today-btn:active{transform:scale(.92);}
+
+/* ── v5: features ── */
+.p-mile{font-size:.66rem;color:var(--sub);margin-top:8px;padding:4px 9px;border-radius:999px;background:var(--petal);display:inline-block;}
+.p-quick{display:block;width:100%;margin-top:10px;padding:8px 0;border-radius:999px;border:none;background:var(--qc,var(--rose));color:#fff;font:700 .74rem 'Zen Maru Gothic',sans-serif;cursor:pointer;transition:transform .14s var(--spring);}
+.p-quick:active{transform:scale(.94);}
+.month-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.month-sum div{background:var(--card);border:1px solid rgba(255,255,255,.65);border-radius:var(--r-md);padding:12px 6px;text-align:center;box-shadow:var(--shadow-sm);}
+.month-sum b{display:block;font-family:'Klee One',cursive;font-size:1.4rem;color:var(--deep);letter-spacing:-.02em;line-height:1.1;}
+.month-sum span{font-size:.62rem;color:var(--muted);}
+.month-photos{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scroll-snap-type:x proximity;}
+.month-photos img{width:84px;height:84px;object-fit:cover;border-radius:var(--r-sm);flex-shrink:0;scroll-snap-align:start;cursor:pointer;transition:transform .14s var(--spring);}
+.month-photos img:active{transform:scale(.94);}
+
+/* ── v6 ── */
+.av{border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;margin-bottom:10px;flex-shrink:0;}
+.set-person .av{margin:0;}
+.p-rel{margin-left:6px;font-size:.58rem;font-weight:600;color:var(--rose);background:var(--petal);padding:2px 7px;border-radius:999px;vertical-align:middle;}
+.p-mutual{display:block;width:100%;margin-top:6px;padding:7px 0;border-radius:999px;border:1.5px solid var(--rose);background:transparent;color:var(--rose);font:700 .72rem 'Zen Maru Gothic',sans-serif;cursor:pointer;transition:transform .14s var(--spring);}
+.p-mutual:active{transform:scale(.94);}
+.sel{border:1.5px solid var(--petal);border-radius:12px;padding:8px 10px;font:inherit;font-size:.82rem;background:rgba(255,255,255,.85);color:var(--text);outline:none;}
+.file-in{font-size:.78rem;border:none!important;padding:6px 0!important;background:none!important;}
+.set-group{background:var(--card);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.65);border-radius:var(--r-lg);padding:6px 16px 10px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+.set-title{font-size:.66rem;color:var(--muted);font-weight:600;letter-spacing:.05em;padding:10px 0 2px;}
+.set-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);font-size:.86rem;}
+.set-row:last-child{border-bottom:none;}
+.tg{position:relative;width:46px;height:28px;flex-shrink:0;}
+.tg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
+.tg i{position:absolute;inset:0;border-radius:999px;background:var(--blush);transition:background .2s;}
+.tg i::after{content:'';position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.22);transition:transform .32s var(--spring);}
+.tg input:checked+i{background:var(--rose);}
+.tg input:checked+i::after{transform:translateX(18px);}
+.seg{display:flex;background:var(--petal);border-radius:999px;padding:3px;}
+.seg button{border:none;background:none;padding:5px 13px;border-radius:999px;font:600 .74rem 'Zen Maru Gothic',sans-serif;color:var(--sub);cursor:pointer;transition:background .2s,color .2s;}
+.seg button.on{background:var(--rose);color:#fff;}
+.set-person{padding:12px 0;border-bottom:1px solid var(--border);}
+.set-person:last-child{border-bottom:none;}
+.sp-top{display:flex;align-items:center;gap:10px;}
+.sp-btns{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 8px;}
+.mini{padding:6px 12px;border-radius:999px;border:1.5px solid var(--blush);background:rgba(255,255,255,.7);color:var(--sub);font:600 .7rem 'Zen Maru Gothic',sans-serif;cursor:pointer;}
+.mini.hot{border-color:var(--rose);color:var(--rose);}
+.song-in{font-size:.78rem!important;padding:8px 11px!important;}
+.cele{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(20,8,14,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fadeIn .25s ease both;}
+.cele-card{background:var(--card);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.7);border-radius:var(--r-xl);padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:var(--shadow-lg);animation:modalPop .4s var(--spring) both;}
+.cele-card h2{font-family:'Klee One',cursive;font-size:1.3rem;color:var(--deep);margin:10px 0 8px;}
+.cele-card p{font-size:.84rem;line-height:1.8;color:var(--sub);margin-bottom:18px;}
+.cele-card b{color:var(--rose);font-size:1.05rem;}
+.cele-heart{width:72px;height:72px;animation:pulse 1s var(--spring) infinite alternate;}
+@keyframes pulse{from{transform:scale(.9)}to{transform:scale(1.12)}}
+.pt{position:fixed;z-index:700;pointer-events:none;border-radius:2px;will-change:transform;}
+
+/* ── v7: glass pill, dashboard ── */
+.tab-bar.tab-bar{width:360px;}
+.tab-pill.tab-pill{background:color-mix(in srgb,var(--rose) 18%,transparent);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(8px) saturate(150%);-webkit-backdrop-filter:blur(8px) saturate(150%);box-shadow:0 2px 10px var(--border),inset 0 1px 0 rgba(255,255,255,.55);}
+.tab-item.active{color:var(--deep);}
+body.no-dash #ti-dash{display:none;}
+.wg{position:relative;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.65);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm);animation:sectionIn .3s var(--ease-out) both;}
+.wg-x{position:absolute;top:10px;right:12px;border:none;background:none;color:var(--muted);font:600 .68rem 'Zen Maru Gothic',sans-serif;cursor:pointer;padding:4px 6px;border-radius:8px;}
+.wg-x:active{background:var(--petal);}
+.wg-title{font-size:.66rem;color:var(--muted);font-weight:700;letter-spacing:.05em;margin-bottom:10px;}
+.wg-note{font-size:.8rem;color:var(--sub);line-height:1.7;}
+.wx-top{display:flex;align-items:baseline;gap:12px;}
+.wx-t{font-family:'Klee One',cursive;font-size:2.6rem;color:var(--deep);letter-spacing:-.03em;line-height:1;}
+.wx-l{font-size:.9rem;color:var(--text);font-weight:600;}
+.wx-p{font-size:.68rem;color:var(--muted);}
+.wx-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:.8rem;}
+.wx-row b{width:34px;color:var(--sub);}.wx-row span{flex:1;color:var(--text);}.wx-row em{font-style:normal;color:var(--muted);font-size:.7rem;}
+.mu{display:flex;gap:14px;align-items:center;}
+.mu img,.mu .mu-ph{width:84px;height:84px;border-radius:var(--r-md);object-fit:cover;flex-shrink:0;background:var(--petal);box-shadow:var(--shadow-sm);}
+.mu-n{font-weight:700;font-size:.95rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mu-a{font-size:.75rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mu-bar{height:4px;border-radius:999px;background:var(--petal);overflow:hidden;margin:10px 0 8px;}
+.mu-bar i{display:block;height:100%;background:var(--rose);border-radius:999px;transition:width .6s linear;}
+.mu-c{display:flex;gap:10px;align-items:center;}
+.mu-c button{width:38px;height:38px;border-radius:50%;border:none;background:var(--petal);color:var(--rose);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .14s var(--spring);}
+.mu-c button.main{width:46px;height:46px;background:var(--rose);color:#fff;}
+.mu-c button:active{transform:scale(.88);}.mu-c svg{width:18px;height:18px;}
+.dash-add{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.sp-field{width:100%;margin:8px 0 4px;}
+.sp-uri{font-size:.66rem;color:var(--muted);word-break:break-all;line-height:1.6;background:var(--petal);padding:8px 10px;border-radius:var(--r-sm);margin-top:6px;}
+
+/* ── v8 ── */
+.tab-item svg{stroke-linecap:round;stroke-linejoin:round;}
+.chip{outline:none;-webkit-tap-highlight-color:transparent;}
+.chip i,.chip.active i{border:none;box-shadow:0 1px 5px rgba(0,0,0,.18);}
+.chip.active i{transform:scale(1.2);}
+.tab-pill.hide{opacity:0;}
+.tab-name{width:120px;padding:7px 11px;font-size:.84rem;}
+.crop-c{touch-action:none;display:block;margin:0 auto;border-radius:18px;background:#222;}
+
+/* ── v9: tab-bar-style motion on switches and segmented controls ── */
+.tg input:checked+i::after{transform:translateX(18px);}
+.tg i::after{transition:transform .32s cubic-bezier(0.14,1.25,0.3,1),width .22s cubic-bezier(0.14,1.25,0.3,1);}
+.tg i{transition:background .25s var(--ease-out),transform .16s var(--spring);}
+.tg:active i{transform:scale(.95);}
+.tg input:active+i::after{width:32px;}
+.tg input:checked:active+i::after{transform:translateX(10px);}
+.seg{position:relative;}
+.seg button{position:relative;z-index:1;background:none;transition:color .25s var(--ease-out),transform .16s var(--spring);}
+.seg button.on{background:none;color:var(--deep);}
+.seg button:active{transform:scale(.92);}
+.seg-pill{position:absolute;top:0;left:0;width:0;height:0;border-radius:999px;pointer-events:none;z-index:0;background:color-mix(in srgb,var(--rose) 18%,transparent);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(8px) saturate(150%);-webkit-backdrop-filter:blur(8px) saturate(150%);box-shadow:0 2px 10px var(--border),inset 0 1px 0 rgba(255,255,255,.55);transition:left .32s cubic-bezier(0.14,1.25,0.3,1),width .40s cubic-bezier(0.16,1.15,0.3,1);}
+.seg-pill.no-anim{transition:none;}
+
+/* ── v10: hamburger menu, no top bar ── */
+.app{padding-top:calc(56px + env(safe-area-inset-top,0px));}
+.menu-wrap{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:14px;z-index:150;}
+.menu-btn{width:40px;height:40px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.7);background:color-mix(in srgb,var(--cream) 55%,transparent);backdrop-filter:blur(10px) saturate(160%);-webkit-backdrop-filter:blur(10px) saturate(160%);box-shadow:0 2px 12px var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .16s var(--spring);-webkit-tap-highlight-color:transparent;}
+.menu-btn:active{transform:scale(.88);}
+.menu-btn span{display:block;width:16px;height:2px;border-radius:2px;background:var(--deep);transition:transform .36s cubic-bezier(0.14,1.25,0.3,1),opacity .2s,width .3s;}
+.menu-btn span:nth-child(2){width:10px;align-self:center;}
+.menu-wrap.open .menu-btn span:nth-child(1){transform:translateY(6px) rotate(45deg);}
+.menu-wrap.open .menu-btn span:nth-child(2){opacity:0;transform:scaleX(.2);}
+.menu-wrap.open .menu-btn span:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+.menu-panel{position:absolute;top:50px;right:0;width:240px;padding:8px;border-radius:24px;background:color-mix(in srgb,var(--cream) 62%,transparent);backdrop-filter:blur(14px) saturate(170%);-webkit-backdrop-filter:blur(14px) saturate(170%);border:1px solid rgba(255,255,255,.7);box-shadow:var(--shadow-md);transform-origin:top right;transform:scale(.82) translateY(-6px);opacity:0;pointer-events:none;transition:transform .38s cubic-bezier(0.14,1.25,0.3,1),opacity .18s;}
+.menu-wrap.open .menu-panel{transform:none;opacity:1;pointer-events:auto;}
+.menu-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:none;background:none;border-radius:16px;font:600 .88rem 'Zen Maru Gothic',sans-serif;color:var(--text);text-align:left;cursor:pointer;opacity:0;transform:translateY(-8px);transition:transform .38s cubic-bezier(0.14,1.25,0.3,1),opacity .2s,background .15s;}
+.menu-wrap.open .menu-item{opacity:1;transform:none;}
+.menu-wrap.open .menu-item:nth-of-type(2){transition-delay:.04s;}
+.menu-wrap.open .menu-theme{transition-delay:.08s;}
+.menu-item:active{background:color-mix(in srgb,var(--rose) 14%,transparent);}
+.menu-item svg{width:20px;height:20px;color:var(--rose);flex-shrink:0;}
+.menu-sep{height:1px;background:var(--border);margin:4px 10px;}
+.menu-theme{display:block;cursor:default;padding:8px 10px 12px;}
+.menu-theme:active{background:none;}
+.menu-theme .lbl{font-size:.64rem;color:var(--muted);font-weight:700;letter-spacing:.05em;margin:2px 0 12px;}
+
+/* ── REDUCED MOTION ──────────────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:opacity .2s ease!important;transform:none!important;}
+  .day-modal,.conf-modal{animation:none;opacity:1;}
+}
+</style>
+</head>
+<body>
+
+<div class="menu-wrap theme-wrap" id="menu-wrap">
+  <button class="menu-btn" onclick="toggleMenu()" aria-label="メニュー"><span></span><span></span><span></span></button>
+  <div class="menu-panel">
+    <button class="menu-item" onclick="menuGo(openSettings)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>設定</button>
+    <button class="menu-item" onclick="menuGo(openBackup)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14"/></svg>バックアップ</button>
+    <div class="menu-sep"></div>
+    <div class="menu-item menu-theme" id="theme-panel"><div class="lbl">テーマカラー</div><div class="chips"><button class="chip active" data-t="pink" onclick="setTheme('pink')"><i class="sw-pink"></i>ピンク</button><button class="chip" data-t="lavender" onclick="setTheme('lavender')"><i class="sw-lavender"></i>ラベンダー</button><button class="chip" data-t="mint" onclick="setTheme('mint')"><i class="sw-mint"></i>ミント</button><button class="chip" data-t="peach" onclick="setTheme('peach')"><i class="sw-peach"></i>ピーチ</button><button class="chip" data-t="sky" onclick="setTheme('sky')"><i class="sw-sky"></i>スカイ</button><button class="chip" data-t="white" onclick="setTheme('white')"><i class="c-white"></i>ホワイト</button></div></div>
+  </div>
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<div class="tab-bar" id="tab-bar">
+  <div class="tab-pill no-anim" id="tab-pill"></div>
+  <button class="tab-item active" id="ti-home" onclick="showTab('home',this)" aria-label="片思い中">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+      <path d="M9 21V12h6v9"/>
+    </svg>
+    <span class="tab-label">ホーム</span>
+  </button>
+  <button class="tab-item" id="ti-cal" onclick="showTab('cal',this)" aria-label="カレンダー">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="3" y="4" width="18" height="18" rx="5.5"/>
+      <path d="M16 2v4M8 2v4M3 10h18"/>
+      <circle cx="8" cy="15" r="1" fill="currentColor"/>
+      <circle cx="12" cy="15" r="1" fill="currentColor"/>
+      <circle cx="16" cy="15" r="1" fill="currentColor"/>
+    </svg>
+    <span class="tab-label">カレンダー</span>
+  </button>
+  <button class="tab-item" id="ti-stats" onclick="showTab('stats',this)" aria-label="統計">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M18 20V10M12 20V4M6 20v-6"/>
+    </svg>
+    <span class="tab-label">統計</span>
+  </button>
+  <button class="tab-item" id="ti-dash" onclick="showTab('dash',this)" aria-label="ダッシュボード">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7.5" height="9" rx="3.4"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="3"/><rect x="13.5" y="11.5" width="7.5" height="9.5" rx="3.4"/><rect x="3" y="15" width="7.5" height="6" rx="3"/></svg>
+    <span class="tab-label">ダッシュ</span>
+  </button>
+</div>
+
+<div class="app">
+  <div id="tab-home" class="section active">
+    <div id="persons-grid" class="persons-grid"></div>
+    <div id="add-area"></div>
+  </div>
+  <div id="tab-cal" class="section">
+    <div class="cal-person-tabs" id="cal-person-tabs"></div>
+    <div id="cal-song" style="margin-bottom:12px"></div>
+    <div class="month-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)" aria-label="前月">‹</button>
+      <div class="month-label" id="month-label"></div>
+      <button class="nav-btn" onclick="changeMonth(1)" aria-label="次月">›</button>
+      <button class="today-btn" onclick="goToday()">今日</button>
+    </div>
+    <div id="cal-grid-wrap"></div>
+  </div>
+  <div id="tab-stats" class="section">
+    <div id="stats-content"></div>
+  </div>
+  <div id="tab-dash" class="section"><div id="dash-content"></div></div>
+  <div id="tab-set" class="section"><div id="set-content"></div></div>
+</div>
+
+<!-- DAY SHEET -->
+<div id="day-overlay" class="overlay" style="display:none">
+  <div class="day-modal" id="day-modal-inner">
+    <div class="sheet-handle"></div>
+    <div class="dm-head">
+      <h2 id="dm-title"></h2>
+      <div class="dm-badge" id="dm-badge"><span class="dot" id="dm-dot"></span><span id="dm-person"></span></div>
+    </div>
+    <div id="dm-existing"></div>
+    <div id="dm-form"></div>
+    <div class="modal-btns" id="dm-btns"></div>
+  </div>
+</div>
+
+<!-- BACKUP -->
+<div id="bk-overlay" class="overlay" style="display:none"><div class="day-modal"><div class="sheet-handle"></div><div class="dm-head"><h2>バックアップ</h2></div><div id="bk-body"></div><div class="modal-btns"><button class="btn btn-secondary" onclick="closeBk()">閉じる</button></div></div></div>
+
+<!-- CONFIRM -->
+<div id="conf-overlay" class="overlay center" style="display:none">
+  <div class="conf-modal">
+    <h2 id="conf-title"></h2>
+    <p id="conf-msg"></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end" id="conf-btns"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── THEME ────────────────────────────────────────────────────
+function setTheme(t,el){
+  document.body.setAttribute('data-theme',t==='pink'?'':t);
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+  if(el)el.classList.add('active');
+  localStorage.setItem('cc-theme',t);
+}
+function toggleThemePanel(){
+  document.getElementById('theme-panel').classList.toggle('open');
+}
+document.addEventListener('pointerdown',function(e){
+  if(!document.querySelector('.theme-wrap').contains(e.target))
+    document.getElementById('theme-panel').classList.remove('open');
+});
+(function(){
+  var t=localStorage.getItem('cc-theme')||'pink';
+  if(t!=='pink') document.body.setAttribute('data-theme',t);
+  document.addEventListener('DOMContentLoaded',function(){
+    var el=document.querySelector('.sw-'+t);
+    if(el){document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));el.classList.add('active');}
+  });
+})();
+
+// ── DATA ─────────────────────────────────────────────────────
+var DB='crushcal3';
+var data=JSON.parse(localStorage.getItem(DB)||'{"persons":[],"entries":[]}');
+function save(){localStorage.setItem(DB,JSON.stringify(data));}
+
+var personColors=['#e8698a','#9b6fd4','#3daa88','#e88a50','#4a9fd4','#c0496d','#7b5ea7','#2d8a68','#b06030','#1860a0'];
+function getColor(p){return p.color||personColors[0];}
+
+// ── TABS ─────────────────────────────────────────────────────
+function movePill(animate){
+  var pill=document.getElementById('tab-pill');
+  var el=document.querySelector('.tab-item.active');
+  if(!pill||!el)return;
+  if(!animate)pill.classList.add('no-anim');
+  pill.style.left=el.offsetLeft+'px';
+  pill.style.width=el.offsetWidth+'px';
+  if(!animate){void pill.offsetWidth;pill.classList.remove('no-anim');}
+}
+window.addEventListener('load',function(){movePill(false);});
+window.addEventListener('resize',function(){movePill(false);});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){movePill(false);});
+
+function showTab(tab,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  el.classList.add('active');
+  movePill(true);
+  if(tab==='home') renderHome();
+  if(tab==='cal')  {calPersonId=data.persons.length?data.persons[0].id:null; renderCal();}
+  if(tab==='stats') renderStats();
+}
+
+// ── HOME ─────────────────────────────────────────────────────
+var showAddForm=false, selColor=personColors[0];
+
+function renderHome(){
+  var grid=document.getElementById('persons-grid');
+  var addArea=document.getElementById('add-area');
+
+  if(!data.persons.length&&!showAddForm){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-line"></div><p>片思い中の人がいません<br>下から追加してみよう</p></div>';
+  } else {
+    grid.innerHTML=data.persons.map(function(p,i){
+      var days=getDays(p.since);
+      var sorted=data.entries.filter(e=>e.personId===p.id).sort((a,b)=>b.date.localeCompare(a.date));
+      var lastLike=sorted.length?sorted[0].like:null;
+      var c=getColor(p);
+      return '<div class="person-card" onclick="goCal(\''+p.id+'\')" onpointerenter="this.classList.add(\'lifted\')" onpointerleave="this.classList.remove(\'lifted\')">'
+        +'<button class="del-btn" onclick="delPerson('+i+',event)" aria-label="削除">✕</button>'
+        +avatarHtml(p,c)
+        +'<div class="p-name">'+esc(p.name)+'<span class="p-rel">'+esc(p.rel||'片思い')+'</span></div>'
+        +'<div class="p-since">'+fmtDate(p.since)+'から</div>'
+        +'<div class="p-days">'+days+'<span> 日間</span></div>'
+        +'<div class="p-like">最新の好き度: '+(lastLike!==null?lastLike+'/100':'—')+'</div>'
+        +'<div class="p-mile">'+mileStr(days)+'</div>'
+        +'<button class="p-quick" style="--qc:'+c+'" onclick="quickToday(\''+p.id+'\',event)">今日を記録</button>'
+        +((p.rel||'片思い')==='片思い'?'<button class="p-mutual" onclick="askMutual(\''+p.id+'\',event)">両思いになった</button>':'')
+        +'</div>';
+    }).join('');
+  }
+
+  if(showAddForm){
+    var colorPick=personColors.map(function(c,ci){
+      return '<span class="color-opt'+(c===selColor?' selected':'')+'" data-color="'+c+'" style="background:'+c+'" onclick="pickColor(this)"></span>';
+    }).join('');
+    addArea.innerHTML='<div class="add-card">'
+      +'<h2>新しい片思いを追加</h2>'
+      +'<div class="form-row">'
+        +'<div class="form-group"><label>呼び名</label><input type="text" id="n-name" placeholder="例：Kくん、花ちゃん" autocomplete="off"></div>'
+        +'<div class="form-group"><label>好きになった日</label><input type="date" id="n-since" value="'+today()+'"></div>'
+      +'</div>'
+      +'<div class="form-group" style="margin-bottom:12px"><label>出会った日（任意）</label><input type="date" id="n-met"></div>'
+      +'<div class="form-row"><div class="form-group"><label>関係</label><select class="sel" id="n-rel">'+relOpts()+'</select></div><div class="form-group"><label>アイコン（任意）</label><input type="file" id="n-icon" accept="image/*" class="file-in"></div></div>'
+      +'<div class="form-group" style="margin-bottom:16px"><label>カラー</label><div class="color-row">'+colorPick+'</div></div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button class="btn btn-primary" onclick="addPerson()">追加する</button>'
+        +'<button class="btn btn-secondary" onclick="showAddForm=false;renderHome()">キャンセル</button>'
+      +'</div></div>';
+  } else {
+    addArea.innerHTML='<button class="btn-add-new" onclick="showAddForm=true;renderHome()">＋ 新しい片思いを追加する</button>';
+  }
+}
+
+function pickColor(el){
+  selColor=el.dataset.color;
+  document.querySelectorAll('.color-opt').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function addPerson(){
+  var name=document.getElementById('n-name').value.trim();
+  var since=document.getElementById('n-since').value;
+  var met=document.getElementById('n-met').value;
+  if(!name){alert('呼び名を入力してね');return;}
+  if(!since){alert('好きになった日を選んでね');return;}
+  data.persons.push({id:Date.now().toString(),name:name,since:since,met:met||null,color:selColor});
+  save(); showAddForm=false; selColor=personColors[0]; renderHome();
+}
+function delPerson(i,e){
+  e.stopPropagation();
+  var p=data.persons[i];
+  showConf(p.name+' を削除しますか？','関連する記録もすべて削除されます。',[
+    {label:'キャンセル',cls:'btn-secondary',fn:closeConf},
+    {label:'削除する',cls:'btn-primary',fn:function(){
+      data.entries=data.entries.filter(d=>d.personId!==p.id);
+      data.persons.splice(i,1); save(); closeConf(); renderHome();
+    }}
+  ]);
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────
+var calPersonId=null;
+var calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+function renderCal(){
+  var tabsEl=document.getElementById('cal-person-tabs');
+  if(!data.persons.length){
+    tabsEl.innerHTML='';
+    document.getElementById('cal-grid-wrap').innerHTML='<div class="empty"><div class="empty-line"></div><p>先に片思い中の人を追加してね</p></div>';
+    document.getElementById('month-label').textContent='';
+    return;
+  }
+  if(!calPersonId||!data.persons.find(p=>p.id===calPersonId)) calPersonId=data.persons[0].id;
+  tabsEl.innerHTML=data.persons.map(function(p){
+    var c=getColor(p), active=p.id===calPersonId;
+    return '<button class="cal-tab'+(active?' active':'')+'" style="'
+      +(active?'background:'+c+';border-color:'+c+';':'')+'" onclick="selectCalPerson(\''+p.id+'\')">'
+      +'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+(active?'rgba(255,255,255,0.9)':c)+';flex-shrink:0"></span>'
+      +esc(p.name)+'</button>';
+  }).join('');
+  renderCalGrid();
+}
+function selectCalPerson(id){calPersonId=id;renderCal();}
+function changeMonth(d){
+  // instant feedback, then re-render
+  calMonth+=d;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0) {calMonth=11;calYear--;}
+  renderCalGrid();
+}
+function renderCalGrid(){
+  var person=data.persons.find(p=>p.id===calPersonId);
+  var c=person?getColor(person):null;
+  document.getElementById('month-label').textContent=calYear+'年 '+(calMonth+1)+'月';
+  var wrap=document.getElementById('cal-grid-wrap');
+  var td=today(), firstDay=new Date(calYear,calMonth,1).getDay(), dim=new Date(calYear,calMonth+1,0).getDate();
+
+  var html='<div class="cal-grid">';
+  ['日','月','火','水','木','金','土'].forEach(d=>html+='<div class="cal-dow">'+d+'</div>');
+  for(var i=0;i<firstDay;i++) html+='<div class="cal-cell empty"></div>';
+
+  for(var day=1;day<=dim;day++){
+    var ds=calYear+'-'+pad(calMonth+1)+'-'+pad(day);
+    var dow=(firstDay+day-1)%7;
+    var entries=data.entries.filter(e=>e.personId===calPersonId&&e.date===ds);
+    var last=entries.length?entries[entries.length-1]:null;
+    var isMet=person&&person.met===ds, isSince=person&&person.since===ds;
+    var cls='cal-cell'+(dow===0?' sun':dow===6?' sat':'')+(ds===td?' today':'')+(last?' has-entry':'');
+    html+='<div class="'+cls+'" onclick="openDay(\''+ds+'\')">';
+    html+='<div class="cal-date">'+day
+      +(isMet?'<span class="cal-mark" style="background:'+(c||'var(--rose)')+'">会</span>':'')
+      +(isSince&&!isMet?'<span class="cal-mark" style="background:var(--blush)">好</span>':'')
+      +'</div>';
+    if(last){
+      if(last.photo){
+        html+='<img class="cal-thumb" src="'+last.photo+'" alt="">';
+      } else {
+        if(last.mood) html+='<div class="cal-mood-text">'+esc(last.mood)+'</div>';
+        if(last.like){
+          html+='<div class="cal-like-bar"><div class="cal-like-fill" style="width:'+last.like+'%"></div></div>';
+        }
+      }
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  if(person){
+    html+='<div class="cal-legend">';
+    html+='<span><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--rose)"></span>記録あり</span>';
+    if(person.since) html+='<span><span class="cal-mark" style="background:var(--blush);width:10px;height:10px;font-size:.44rem;line-height:10px;">好</span>好きになった日</span>';
+    if(person.met)   html+='<span><span class="cal-mark" style="background:'+(c||'var(--rose)')+';width:10px;height:10px;font-size:.44rem;line-height:10px;">会</span>出会った日</span>';
+    html+='</div>';
+  }
+  wrap.innerHTML=html;
+}
+
+// ── DAY MODAL (bottom sheet) ──────────────────────────────────
+var dmDate=null, dmPersonId=null, dmMood='', dmPhotoB64=null;
+
+function openDay(dateStr){
+  dmDate=dateStr; dmPersonId=calPersonId; dmMood=''; dmPhotoB64=null;
+  var person=data.persons.find(p=>p.id===calPersonId);
+  var entries=data.entries.filter(e=>e.personId===dmPersonId&&e.date===dmDate);
+  var d=new Date(dateStr), wd=['日','月','火','水','木','金','土'][d.getDay()];
+  var c=person?getColor(person):'var(--rose)';
+
+  document.getElementById('dm-title').textContent=fmtDate(dateStr)+'（'+wd+'）';
+  document.getElementById('dm-person').textContent=person?person.name:'';
+  document.getElementById('dm-dot').style.background=c;
+
+  // existing
+  var exHtml='';
+  if(entries.length){
+    exHtml='<div class="esec"><div class="esec-title">記録済み</div>';
+    entries.forEach(function(en){
+      exHtml+='<div class="exist-card">'
+        +'<div class="exist-top"><div class="exist-meta">'
+        +(en.mood?'<span class="exist-mood">'+esc(en.mood)+'</span>':'')
+        +(en.like?'<span class="exist-like">好き度 '+en.like+'/100</span>':'')
+        +'</div><button class="e-del" onclick="delEntry(\''+en.id+'\')">削除</button></div>'
+        +(en.text?'<div class="exist-text">'+esc(en.text).replace(/\n/g,'<br>')+'</div>':'')
+        +(en.photo?'<img class="exist-img" src="'+en.photo+'">':'')
+        +'</div>';
+    });
+    exHtml+='</div>';
+  }
+  document.getElementById('dm-existing').innerHTML=exHtml;
+
+  // new entry form
+  document.getElementById('dm-form').innerHTML=''
+    +'<div class="esec"><div class="esec-title">この日に記録を追加</div>'
+    +'<div class="mood-row">'
+    +'<button class="mood-btn" onclick="dmSelectMood(this,\'ときめき\')">ときめき</button>'
+    +'<button class="mood-btn" onclick="dmSelectMood(this,\'普通\')">普通</button>'
+    +'<button class="mood-btn" onclick="dmSelectMood(this,\'切ない\')">切ない</button>'
+    +'<button class="mood-btn" onclick="dmSelectMood(this,\'つらい\')">つらい</button>'
+    +'</div>'
+    +'<label style="font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:4px;">好き度</label>'
+    +'<div class="like-row">'
+    +'<span class="like-lbl">低</span>'
+    +'<input type="range" id="dm-like" min="1" max="100" value="70" oninput="document.getElementById(\'dlv\').textContent=this.value">'
+    +'<span class="like-lbl">高</span>'
+    +'<span class="like-val" id="dlv">70</span>'
+    +'</div>'
+    +'<label style="font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin:10px 0 4px;">日記</label>'
+    +'<textarea id="dm-text" placeholder="今日あったこと、感じた気持ち…" style="margin-bottom:10px;width:100%;"></textarea>'
+    +'<label style="font-size:.68rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:6px;">写真</label>'
+    +'<div class="photo-upload"><label for="dm-ph">写真を選ぶ</label><input type="file" id="dm-ph" accept="image/*" onchange="handlePhoto(this)"></div>'
+    +'<img id="dm-prev" style="display:none;width:100%;border-radius:12px;margin-top:8px;max-height:150px;object-fit:cover;">'
+    +'</div>';
+
+  document.getElementById('dm-btns').innerHTML=''
+    +'<button class="btn btn-secondary" onclick="closeDayModal()">閉じる</button>'
+    +'<button class="btn btn-primary" onclick="saveEntry()">保存する</button>';
+
+  var ov=document.getElementById('day-overlay');
+  ov.style.display='flex';
+  // dismiss on overlay tap (not modal itself)
+  ov.onclick=function(e){if(e.target===ov)closeDayModal();};
+}
+
+function dmSelectMood(el,mood){
+  dmMood=mood;
+  document.querySelectorAll('.mood-btn').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function handlePhoto(input){
+  var file=input.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    dmPhotoB64=e.target.result;
+    var img=document.getElementById('dm-prev');
+    img.src=dmPhotoB64; img.style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+function saveEntry(){
+  var like=parseInt(document.getElementById('dm-like').value);
+  var text=document.getElementById('dm-text').value.trim();
+  data.entries.push({id:Date.now().toString(),personId:dmPersonId,date:dmDate,mood:dmMood,like:like,text:text,photo:dmPhotoB64||null});
+  save(); closeDayModal(); renderCalGrid();
+}
+function delEntry(id){
+  data.entries=data.entries.filter(e=>e.id!==id);
+  save(); openDay(dmDate); renderCalGrid();
+}
+function closeDayModal(){
+  var ov=document.getElementById('day-overlay');
+  var modal=document.getElementById('day-modal-inner');
+  // spring-out: slide down
+  modal.style.transition='transform .28s cubic-bezier(0.4,0,1,1),opacity .22s ease';
+  modal.style.transform='translateY(100%)';
+  modal.style.opacity='0.4';
+  setTimeout(function(){
+    ov.style.display='none';
+    modal.style.transition='';
+    modal.style.transform='';
+    modal.style.opacity='';
+  },280);
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function renderStats(){
+  var el=document.getElementById('stats-content');
+  if(!data.persons.length){
+    el.innerHTML='<div class="empty"><div class="empty-line"></div><p>片思い中の人を追加すると統計が見られます</p></div>';
+    return;
+  }
+  var totalDays=data.persons.reduce((s,p)=>s+getDays(p.since),0);
+  var html='<div class="stats-grid">'
+    +'<div class="stat-card"><div class="stat-num">'+data.persons.length+'</div><div class="stat-label">登録した人数</div></div>'
+    +'<div class="stat-card"><div class="stat-num">'+totalDays+'</div><div class="stat-label">合計片思い日数</div></div>'
+    +'<div class="stat-card"><div class="stat-num">'+data.entries.length+'</div><div class="stat-label">記録の数</div></div>'
+    +'</div>';
+  data.persons.forEach(function(p){
+    var ents=data.entries.filter(e=>e.personId===p.id).sort((a,b)=>a.date.localeCompare(b.date));
+    var last=ents.length?ents[ents.length-1].like:null;
+    var first=ents.length?ents[0].like:null;
+    var diff=last!==null&&first!==null?last-first:null;
+    var diffStr=diff===null?'':diff>0?'▲'+diff:diff<0?'▼'+Math.abs(diff):'変化なし';
+    var diffColor=diff>0?'var(--rose)':diff<0?'var(--muted)':'var(--sub)';
+    var c=getColor(p);
+    html+='<div class="person-stat">'
+      +'<div class="ps-header">'
+      +'<span class="ps-name"><span class="ps-dot" style="background:'+c+'"></span>'+esc(p.name)+'</span>'
+      +'<span style="font-size:.72rem;color:'+diffColor+'">'+diffStr+'</span>'
+      +'</div>'
+      +'<div class="ps-days">好きになってから '+getDays(p.since)+' 日間'+(p.met?' ／ 出会った日: '+fmtDate(p.met):'')+'</div>'
+      +(last!==null
+        ?'<div class="like-bar"><div class="like-fill" style="width:'+last+'%"></div></div>'
+         +'<div style="font-size:.68rem;color:var(--muted)">最新: '+last+'/100 ／ 記録 '+ents.length+'件</div>'
+        :'<div style="font-size:.68rem;color:var(--muted);margin-top:6px">まだ記録がありません</div>')
+      +'</div>';
+  });
+  el.innerHTML=html;
+}
+
+// ── CONFIRM ───────────────────────────────────────────────────
+function showConf(title,msg,btns){
+  document.getElementById('conf-title').textContent=title;
+  document.getElementById('conf-msg').textContent=msg;
+  document.getElementById('conf-btns').innerHTML=btns.map(b=>'<button class="btn '+b.cls+'" id="cb'+b.label+'">'+b.label+'</button>').join('');
+  btns.forEach(b=>document.getElementById('cb'+b.label).addEventListener('click',b.fn));
+  document.getElementById('conf-overlay').style.display='flex';
+}
+function closeConf(e){
+  if(e&&e.target&&e.target!==document.getElementById('conf-overlay'))return;
+  document.getElementById('conf-overlay').style.display='none';
+}
+document.getElementById('conf-overlay').addEventListener('click',closeConf);
+
+// ── HELPERS ───────────────────────────────────────────────────
+function today(){return new Date().toISOString().split('T')[0];}
+function pad(n){return n<10?'0'+n:''+n;}
+function getDays(s){return Math.max(0,Math.floor((new Date()-new Date(s))/86400000));}
+function fmtDate(d){if(!d)return'';var p=d.split('-');return p[0]+'年'+parseInt(p[1])+'月'+parseInt(p[2])+'日';}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── INIT ──────────────────────────────────────────────────────
+// ── v4 ──────────────────────────────────────────────────────
+function setTheme(t){
+  document.body.setAttribute('data-theme',t==='pink'?'':t);
+  document.querySelectorAll('.chip').forEach(function(c){c.classList.toggle('active',c.dataset.t===t);});
+  localStorage.setItem('cc-theme',t);
+}
+setTheme(localStorage.getItem('cc-theme')||'pink');
+
+function save(){
+  try{localStorage.setItem(DB,JSON.stringify(data));}
+  catch(e){alert('保存容量がいっぱいです。バックアップを書き出してから、写真を減らしてください。');}
+}
+function closeConf(e){
+  var ov=document.getElementById('conf-overlay');
+  if(e&&e.target&&e.target!==ov&&!e.target.classList.contains('btn'))return;
+  ov.style.display='none';
+}
+function goCal(id){showTab('cal',document.getElementById('ti-cal'));calPersonId=id;renderCal();}
+function goToday(){
+  if(!data.persons.length)return;
+  calYear=new Date().getFullYear();calMonth=new Date().getMonth();renderCalGrid();
+}
+function handlePhoto(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var im=new Image();
+    im.onload=function(){
+      var s=Math.min(1,900/Math.max(im.width,im.height));
+      var c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      dmPhotoB64=c.toDataURL('image/jpeg',.82);
+      var p=document.getElementById('dm-prev');p.src=dmPhotoB64;p.style.display='block';
+    };
+    im.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+function closeSheet(id){
+  var ov=document.getElementById(id),m=ov.firstElementChild;
+  m.style.animation='none';
+  m.style.transition='transform .28s cubic-bezier(.4,0,1,1),opacity .22s ease';
+  m.style.transform='translateY(100%)';m.style.opacity='.4';
+  setTimeout(function(){ov.style.display='none';m.style.transition='';m.style.transform='';m.style.opacity='';m.style.animation='';},280);
+}
+function closeDayModal(){closeSheet('day-overlay');}
+function closeBk(){closeSheet('bk-overlay');}
+
+// ── backup ──
+function openBackup(){
+  var photos=data.entries.filter(function(e){return e.photo;}).length;
+  var last=localStorage.getItem('cc-lastbackup');
+  var kb=Math.round(JSON.stringify(data).length/1024);
+  document.getElementById('bk-body').innerHTML=
+    '<div class="esec"><div class="esec-title">現在のデータ</div><div class="exist-card" style="line-height:1.9;font-size:.82rem">片思い '+data.persons.length+'人 ／ 記録 '+data.entries.length+'件 ／ 写真 '+photos+'枚<br><span style="color:var(--muted)">サイズ 約'+kb+'KB ／ '+(last?'最後の書き出し '+fmtDate(last.slice(0,10)):'まだ書き出していません')+'</span></div></div>'
+    +'<p style="font-size:.76rem;color:var(--muted);line-height:1.7;margin-bottom:14px">データはこの端末のブラウザ内にだけ保存されています。機種変更やブラウザのデータ削除に備えて、ときどき書き出しておくと安心です。</p>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="exportData()">書き出す</button><label class="btn btn-secondary" style="cursor:pointer">読み込む<input type="file" accept="application/json,.json" style="display:none" onchange="importData(this)"></label></div>';
+  var ov=document.getElementById('bk-overlay');ov.style.display='flex';
+  ov.onclick=function(e){if(e.target===ov)closeBk();};
+}
+function exportData(){
+  var obj={app:'crush-calendar',version:1,exportedAt:new Date().toISOString(),theme:localStorage.getItem('cc-theme')||'pink',persons:data.persons,entries:data.entries,settings:data.settings};
+  var name='kataomoi-backup-'+today()+'.json';
+  var blob=new Blob([JSON.stringify(obj)],{type:'application/json'});
+  function done(){localStorage.setItem('cc-lastbackup',new Date().toISOString());openBackup();}
+  var file=null;try{file=new File([blob],name,{type:'application/json'});}catch(x){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'片思いカレンダー バックアップ'}).then(done).catch(function(){});
+  }else{
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(a.href);},1500);done();
+  }
+}
+function importData(input){
+  var f=input.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var o;try{o=JSON.parse(e.target.result);}catch(x){alert('ファイルを読み込めませんでした');return;}
+    if(!o||!Array.isArray(o.persons)||!Array.isArray(o.entries)){alert('片思いカレンダーのバックアップではありません');return;}
+    showConf('バックアップを読み込みますか？','ファイル内：片思い'+o.persons.length+'人 / 記録'+o.entries.length+'件。「統合」は今のデータに足し、「置き換え」は今のデータを消してファイルの内容にします。',[
+      {label:'キャンセル',cls:'btn-secondary',fn:closeConf},
+      {label:'統合',cls:'btn-secondary',fn:function(){mergeIn(o,false);}},
+      {label:'置き換え',cls:'btn-primary',fn:function(){mergeIn(o,true);}}
+    ]);
+  };
+  r.readAsText(f);input.value='';
+}
+function mergeIn(o,replace){
+  if(replace){data={persons:o.persons,entries:o.entries,settings:Object.assign({icons:true,celebrate:true,style:"heart"},o.settings||{})};}
+  else{
+    var pid={},eid={};
+    data.persons.forEach(function(p){pid[p.id]=1;});data.entries.forEach(function(x){eid[x.id]=1;});
+    o.persons.forEach(function(p){if(!pid[p.id])data.persons.push(p);});
+    o.entries.forEach(function(x){if(!eid[x.id])data.entries.push(x);});
+  }
+  save();closeConf();closeBk();renderHome();
+}
+
+// ── v5 ──
+function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function mileStr(d){
+  var L=[100,200,300,365,500,730,1000,1095,1500,2000,3000],n=null;
+  for(var i=0;i<L.length;i++){if(L[i]>d){n=L[i];break;}}
+  if(n===null)n=(Math.floor(d/365)+1)*365;
+  return (n%365===0?(n/365)+'年':n+'日')+'まであと'+(n-d)+'日';
+}
+function streak(id){
+  var s={};data.entries.forEach(function(e){if(e.personId===id)s[e.date]=1;});
+  var d=new Date(),n=0;
+  function k(x){return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());}
+  if(!s[k(d)])d.setDate(d.getDate()-1);
+  while(s[k(d)]){n++;d.setDate(d.getDate()-1);}
+  return n;
+}
+function spark(ents,c){
+  var t=function(e){return new Date(e.date).getTime();},t0=t(ents[0]),span=Math.max(1,t(ents[ents.length-1])-t0);
+  var pts=ents.map(function(e){return [6+(t(e)-t0)/span*288,54-e.like/100*46];});
+  return '<svg viewBox="0 0 300 60" style="width:100%;height:60px;margin-top:8px;display:block"><polyline points="'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ')+'" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'+pts.map(function(q){return '<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3" fill="'+c+'"/>';}).join('')+'</svg>';
+}
+function quickToday(id,e){
+  e.stopPropagation();
+  calYear=new Date().getFullYear();calMonth=new Date().getMonth();
+  goCal(id);openDay(today());
+}
+var _rs=renderStats;
+renderStats=function(){
+  _rs();
+  var cards=document.querySelectorAll('.person-stat');
+  data.persons.forEach(function(p,i){
+    var c=cards[i];if(!c)return;
+    var ents=data.entries.filter(function(e){return e.personId===p.id;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+    var x='<div style="font-size:.68rem;color:var(--muted);margin-top:6px">連続記録 '+streak(p.id)+'日 ／ '+mileStr(getDays(p.since))+'</div>';
+    if(ents.length>1)x+=spark(ents,getColor(p));
+    c.insertAdjacentHTML('beforeend',x);
+  });
+};
+var _rcg=renderCalGrid;
+renderCalGrid=function(){
+  _rcg();
+  if(!calPersonId)return;
+  var pre=calYear+'-'+pad(calMonth+1);
+  var es=data.entries.filter(function(e){return e.personId===calPersonId&&e.date.indexOf(pre)===0;});
+  var dd={};es.forEach(function(e){dd[e.date]=1;});
+  var avg=es.length?Math.round(es.reduce(function(s,e){return s+e.like;},0)/es.length):null;
+  var ph=es.filter(function(e){return e.photo;});
+  var x='<div class="month-sum"><div><b>'+Object.keys(dd).length+'</b><span>記録した日</span></div><div><b>'+(avg===null?'—':avg)+'</b><span>今月の平均好き度</span></div><div><b>'+ph.length+'</b><span>写真</span></div></div>';
+  if(ph.length)x+='<div class="month-photos">'+ph.map(function(e){return '<img src="'+e.photo+'" onclick="openDay(\''+e.date+'\')" alt="">';}).join('')+'</div>';
+  document.getElementById('cal-grid-wrap').insertAdjacentHTML('beforeend',x);
+};
+
+// ── v6 ──
+data.settings=Object.assign({icons:true,celebrate:true,style:'heart'},data.settings||{});
+var RELS=['片思い','気になる','友達','両思い','恋人','推し'];
+var HEART='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+function relOpts(v){return RELS.map(function(r){return '<option'+(r===(v||'片思い')?' selected':'')+'>'+r+'</option>';}).join('');}
+function compressImg(f,m,sq,cb){
+  var r=new FileReader();
+  r.onload=function(e){var im=new Image();im.onload=function(){
+    var c=document.createElement('canvas'),g=c.getContext('2d');
+    if(sq){var s=Math.min(im.width,im.height);c.width=c.height=m;g.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,m,m);}
+    else{var k=Math.min(1,m/Math.max(im.width,im.height));c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);g.drawImage(im,0,0,c.width,c.height);}
+    cb(c.toDataURL('image/jpeg',.85));};im.src=e.target.result;};
+  r.readAsDataURL(f);
+}
+function avatar(p,c,sz){
+  var st='width:'+sz+'px;height:'+sz+'px;font-size:'+Math.round(sz*.42)+'px';
+  if(p.icon)return '<img class="av" style="'+st+'" src="'+p.icon+'" alt="">';
+  return '<div class="av" style="'+st+';background:'+c+'">'+esc((p.name||'?').charAt(0))+'</div>';
+}
+function avatarHtml(p,c){return data.settings.icons?avatar(p,c,40):'<div class="p-dot" style="background:'+c+'"></div>';}
+function addPerson(){
+  var name=document.getElementById('n-name').value.trim(),since=document.getElementById('n-since').value,met=document.getElementById('n-met').value;
+  var rel=document.getElementById('n-rel').value,f=document.getElementById('n-icon').files[0];
+  if(!name){alert('呼び名を入力してね');return;}
+  if(!since){alert('はじまった日を選んでね');return;}
+  function fin(icon){
+    data.persons.push({id:Date.now().toString(),name:name,since:since,met:met||null,color:selColor,rel:rel,icon:icon||null,song:null,mutual:null});
+    save();showAddForm=false;selColor=personColors[0];renderHome();
+  }
+  if(f)compressImg(f,160,true,fin);else fin(null);
+}
+function P(id){return data.persons.find(function(x){return x.id===id;});}
+function setSet(k,v){data.settings[k]=v;save();renderSettings();renderHome();}
+function setRel(id,v){P(id).rel=v;save();renderSettings();renderHome();}
+function setIcon(id,input){var f=input.files[0];if(!f)return;compressImg(f,160,true,function(u){P(id).icon=u;save();renderSettings();renderHome();});}
+function clearIcon(id){P(id).icon=null;save();renderSettings();renderHome();}
+function spEmbed(u){
+  var m=/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|album|playlist|episode|show|artist)\/([A-Za-z0-9]+)/.exec(u||'');
+  return m?{src:'https://open.spotify.com/embed/'+m[1]+'/'+m[2]+'?utm_source=generator',h:(m[1]==='track'||m[1]==='episode')?80:152}:null;
+}
+function saveSong(id,v){
+  v=v.trim();
+  if(v&&!spEmbed(v)){alert('SpotifyのURL（open.spotify.com/...）を入れてください');return;}
+  P(id).song=v||null;save();
+}
+function updateSong(){
+  var box=document.getElementById('cal-song');if(!box)return;
+  var p=P(calPersonId),e=p&&spEmbed(p.song);
+  if(!e){box.innerHTML='';box.dataset.src='';return;}
+  if(box.dataset.src===e.src)return;
+  box.dataset.src=e.src;
+  box.innerHTML='<iframe src="'+e.src+'" width="100%" height="'+e.h+'" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border:0;border-radius:14px"></iframe>';
+}
+var _rc=renderCal;renderCal=function(){_rc();updateSong();};
+var _rcg2=renderCalGrid;
+renderCalGrid=function(){
+  _rcg2();
+  var p=P(calPersonId);
+  if(p&&p.mutual){var c=document.querySelector('.cal-cell[onclick*="'+p.mutual+'"] .cal-date');if(c)c.insertAdjacentHTML('beforeend','<span class="cal-mark" style="background:#e8698a">両</span>');}
+};
+// ── mutual ──
+function askMutual(id,e){
+  if(e)e.stopPropagation();
+  var p=P(id);if(!p)return;
+  showConf('両思いになりましたか？',p.name+'さんとの関係を「両思い」にします。',[
+    {label:'まだ',cls:'btn-secondary',fn:closeConf},
+    {label:'両思いになった',cls:'btn-primary',fn:function(){closeConf();doMutual(id);}}
+  ]);
+}
+function doMutual(id){
+  var p=P(id);p.rel='両思い';p.mutual=today();save();renderHome();
+  if(document.getElementById('tab-set').classList.contains('active'))renderSettings();
+  celebrate(p);
+}
+function previewCele(){var p=data.persons[0]||{name:'あの人',since:today()};celebrate(Object.assign({},p,{mutual:p.mutual||today()}),true);}
+function celebrate(p,force){
+  if(!force&&!data.settings.celebrate)return;
+  var d=Math.max(0,Math.round((new Date(p.mutual||today())-new Date(p.since))/86400000));
+  var ov=document.createElement('div');ov.className='cele';
+  ov.innerHTML='<div class="cele-card"><svg class="cele-heart" viewBox="0 0 24 24"><path d="'+HEART+'" fill="#e8698a"/></svg><h2>両思いおめでとう</h2><p>'+esc(p.name)+'さんへの想いが届きました<br>片思いの期間は <b>'+d+'日</b></p><button class="btn btn-primary" id="cele-x">とじる</button></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('#cele-x').onclick=function(){ov.remove();};
+  if(navigator.vibrate)navigator.vibrate([18,40,18]);
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)burst(data.settings.style);
+}
+function burst(style){
+  var cols=['#e8698a','#f2a7c3','#ff8fab','#c9aaee','#ffd36e','#8ed8c0'],cx=innerWidth/2,cy=innerHeight*.42;
+  for(var i=0;i<70;i++){
+    var el=document.createElement('div');el.className='pt';
+    var sz=9+Math.random()*10,col=cols[i%cols.length],hh=style==='heart'?sz:sz*.55;
+    el.style.cssText='left:'+cx+'px;top:'+cy+'px;width:'+sz+'px;height:'+hh+'px;margin:'+(-hh/2)+'px 0 0 '+(-sz/2)+'px;';
+    if(style==='heart')el.innerHTML='<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="'+HEART+'" fill="'+col+'"/></svg>';
+    else el.style.background=col;
+    document.body.appendChild(el);
+    var a=Math.random()*Math.PI*2,r=110+Math.random()*Math.min(innerWidth*.6,280),dx=Math.cos(a)*r,dy=Math.sin(a)*r-70,rot=Math.random()*720-360;
+    var an=el.animate([
+      {transform:'translate(0px,0px) rotate(0deg) scale(.3)',opacity:1},
+      {transform:'translate('+dx+'px,'+dy+'px) rotate('+rot/2+'deg) scale(1)',opacity:1,offset:.45},
+      {transform:'translate('+dx*1.1+'px,'+(dy+260)+'px) rotate('+rot+'deg) scale(.9)',opacity:0}
+    ],{duration:1500+Math.random()*900,easing:'cubic-bezier(.2,.7,.3,1)',delay:Math.random()*120});
+    an.onfinish=(function(n){return function(){n.remove();};})(el);
+  }
+}
+// ── settings tab ──
+function tg(k,on){return '<label class="tg"><input type="checkbox"'+(on?' checked':'')+' onchange="setSet(\''+k+'\',this.checked)"><i></i></label>';}
+function renderSettings(){
+  var s=data.settings,x='';
+  x+='<div class="set-group"><div class="set-title">表示</div>'
+    +'<div class="set-row"><span>人のアイコンを表示</span>'+tg('icons',s.icons)+'</div>'
+    +'<div class="set-row"><span>両思いの演出</span>'+tg('celebrate',s.celebrate)+'</div>'
+    +'<div class="set-row"><span>演出のスタイル</span><div class="seg"><button class="'+(s.style==='heart'?'on':'')+'" onclick="setSet(\'style\',\'heart\')">ハート</button><button class="'+(s.style==='confetti'?'on':'')+'" onclick="setSet(\'style\',\'confetti\')">紙吹雪</button></div></div>'
+    +'<div class="set-row"><span>演出をプレビュー</span><button class="btn btn-secondary" style="padding:6px 14px" onclick="previewCele()">見てみる</button></div></div>';
+  x+='<div class="set-group"><div class="set-title">登録した人</div>';
+  if(!data.persons.length)x+='<div style="font-size:.8rem;color:var(--muted);padding:8px 0">まだ誰も登録されていません</div>';
+  data.persons.forEach(function(p){
+    var c=getColor(p),id=p.id;
+    x+='<div class="set-person"><div class="sp-top">'+avatar(p,c,44)+'<div style="flex:1;min-width:0"><div class="p-name">'+esc(p.name)+'</div>'+(p.mutual?'<div class="p-since">両思いになった日 '+fmtDate(p.mutual)+'</div>':'')+'</div>'
+      +'<select class="sel" onchange="setRel(\''+id+'\',this.value)">'+relOpts(p.rel)+'</select></div>'
+      +'<div class="sp-btns"><label class="mini">アイコンを選ぶ<input type="file" accept="image/*" style="display:none" onchange="setIcon(\''+id+'\',this)"></label>'
+      +(p.icon?'<button class="mini" onclick="clearIcon(\''+id+'\')">アイコンを外す</button>':'')
+      +((p.rel||'片思い')==='片思い'?'<button class="mini hot" onclick="askMutual(\''+id+'\')">両思いになった</button>':'')+'</div>'
+      +'<input type="text" class="song-in" placeholder="Spotifyの曲・プレイリストのURL" value="'+esc(p.song||'')+'" onchange="saveSong(\''+id+'\',this.value)"></div>';
+  });
+  x+='</div><div class="set-group"><div class="set-title">データ</div><div class="set-row"><span>バックアップ・復元</span><button class="btn btn-secondary" style="padding:6px 14px" onclick="openBackup()">開く</button></div></div>';
+  document.getElementById('set-content').innerHTML=x;
+}
+var _st=showTab;showTab=function(t,el){_st(t,el);if(t==='set')renderSettings();};
+
+// ── v7: dashboard ──
+data.settings=Object.assign({dash:true,widgets:['weather','music'],spId:''},data.settings);
+var WG={weather:'天気',music:'ミュージック'};
+function applyDash(){
+  document.body.classList.toggle('no-dash',!data.settings.dash);
+  if(!data.settings.dash&&document.getElementById('tab-dash').classList.contains('active'))showTab('home',document.getElementById('ti-home'));
+  var a=document.querySelector('.tab-item.active');if(a)movePill(false);
+}
+var _ss=setSet;setSet=function(k,v){_ss(k,v);if(k==='dash')applyDash();};
+var _st2=showTab;showTab=function(t,el){_st2(t,el);if(t==='dash')renderDash();};
+applyDash();
+function addWg(w){if(data.settings.widgets.indexOf(w)<0)data.settings.widgets.push(w);save();renderDash();}
+function rmWg(w){data.settings.widgets=data.settings.widgets.filter(function(x){return x!==w;});save();renderDash();}
+function renderDash(){
+  var ws=data.settings.widgets,x='';
+  ws.forEach(function(w){x+='<div class="wg"><button class="wg-x" onclick="rmWg(\''+w+'\')">削除</button><div class="wg-title">'+WG[w]+'</div><div id="wg-'+w+'"></div></div>';});
+  var miss=Object.keys(WG).filter(function(w){return ws.indexOf(w)<0;});
+  if(!ws.length)x+='<div class="empty"><div class="empty-line"></div><p>ウィジェットがありません<br>下から追加できます</p></div>';
+  if(miss.length)x+='<div class="dash-add">'+miss.map(function(w){return '<button class="btn btn-secondary" onclick="addWg(\''+w+'\')">＋ '+WG[w]+'</button>';}).join('')+'</div>';
+  document.getElementById('dash-content').innerHTML=x;
+  if(ws.indexOf('weather')>=0)loadWx(false);
+  if(ws.indexOf('music')>=0){drawMu();pollMu();if(!muT)muT=setInterval(pollMu,5000);}
+}
+// weather (Open-Meteo, no key)
+var wx=null;
+var WXN={0:'快晴',1:'晴れ',2:'晴れ時々くもり',3:'くもり',45:'霧',48:'霧',51:'小雨',53:'霧雨',55:'霧雨',61:'雨',63:'雨',65:'強い雨',71:'雪',73:'雪',75:'大雪',77:'雪',80:'にわか雨',81:'にわか雨',82:'激しいにわか雨',85:'にわか雪',86:'にわか雪',95:'雷雨',96:'雷雨',99:'雷雨'};
+function loadWx(force){
+  var b=document.getElementById('wg-weather');if(!b)return;
+  if(wx&&!force&&Date.now()-wx.t<9e5){drawWx();return;}
+  b.innerHTML='<div class="wg-note">取得中…</div>';
+  function go(la,lo,place){
+    fetch('https://api.open-meteo.com/v1/forecast?latitude='+la+'&longitude='+lo+'&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=5')
+      .then(function(r){return r.json();}).then(function(j){wx={t:Date.now(),j:j,place:place};drawWx();})
+      .catch(function(){var e=document.getElementById('wg-weather');if(e)e.innerHTML='<div class="wg-note">天気を取得できませんでした。<button class="mini" onclick="loadWx(true)">再読み込み</button></div>';});
+  }
+  if(navigator.geolocation)navigator.geolocation.getCurrentPosition(function(p){go(p.coords.latitude.toFixed(2),p.coords.longitude.toFixed(2),'現在地');},function(){go(35.68,139.76,'東京（位置情報なし）');},{timeout:6000});
+  else go(35.68,139.76,'東京（位置情報なし）');
+}
+function drawWx(){
+  var b=document.getElementById('wg-weather');if(!b||!wx)return;
+  var j=wx.j,c=j.current,d=j.daily,wd=['日','月','火','水','木','金','土'];
+  var x='<div class="wx-top"><div class="wx-t">'+Math.round(c.temperature_2m)+'°</div><div><div class="wx-l">'+(WXN[c.weather_code]||'—')+'</div><div class="wx-p">'+esc(wx.place)+'</div></div></div><div style="margin-top:10px">';
+  d.time.forEach(function(t,i){x+='<div class="wx-row"><b>'+(i===0?'今日':wd[new Date(t).getDay()])+'</b><span>'+(WXN[d.weather_code[i]]||'—')+'</span><em>降水 '+(d.precipitation_probability_max[i]==null?'—':d.precipitation_probability_max[i]+'%')+'</em><span style="flex:none;text-align:right;width:76px">'+Math.round(d.temperature_2m_max[i])+'° / '+Math.round(d.temperature_2m_min[i])+'°</span></div>';});
+  b.innerHTML=x+'</div><button class="mini" style="margin-top:8px" onclick="loadWx(true)">更新</button>';
+}
+// Spotify (PKCE, Web API)
+var SPK='cc-sp',muS=null,muT=null;
+function spTok(){try{return JSON.parse(localStorage.getItem(SPK)||'null');}catch(e){return null;}}
+function b64u(buf){return btoa(String.fromCharCode.apply(null,new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function spRedirect(){return location.origin+location.pathname;}
+async function spAuth(){
+  var id=data.settings.spId;if(!id){alert('設定でClient IDを入れてください');return;}
+  if(!window.crypto||!crypto.subtle){alert('https のページで開いてください（連携には安全な接続が必要です）');return;}
+  var v=b64u(crypto.getRandomValues(new Uint8Array(48)));localStorage.setItem('cc-spv',v);
+  var ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+  location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({client_id:id,response_type:'code',redirect_uri:spRedirect(),code_challenge_method:'S256',code_challenge:ch,scope:'user-read-playback-state user-modify-playback-state',state:'cc'});
+}
+async function spToken(body){
+  var r=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)});
+  var j=await r.json();if(!j.access_token)throw new Error(j.error_description||j.error||'token');
+  var t={a:j.access_token,r:j.refresh_token||(spTok()||{}).r,e:Date.now()+j.expires_in*1000-60000};localStorage.setItem(SPK,JSON.stringify(t));return t;
+}
+async function spApi(m,path){
+  var t=spTok();if(!t)return null;
+  if(Date.now()>t.e)t=await spToken({grant_type:'refresh_token',refresh_token:t.r,client_id:data.settings.spId});
+  return fetch('https://api.spotify.com/v1'+path,{method:m,headers:{Authorization:'Bearer '+t.a}});
+}
+function spOut(){localStorage.removeItem(SPK);muS=null;if(document.getElementById('tab-set').classList.contains('active'))renderSettings();drawMu();}
+async function pollMu(){
+  if(!document.getElementById('wg-music')||!document.getElementById('tab-dash').classList.contains('active')){if(muT){clearInterval(muT);muT=null;}return;}
+  if(!spTok()){drawMu();return;}
+  try{var r=await spApi('GET','/me/player');muS=r.status===204?{none:1}:r.ok?await r.json():{err:r.status};}catch(e){muS={err:'net'};}
+  drawMu();
+}
+function drawMu(){
+  var b=document.getElementById('wg-music');if(!b)return;
+  var s=data.settings;
+  if(!s.spId){b.innerHTML='<div class="wg-note">設定でSpotifyのClient IDを入れると、ここで再生を操作できます。</div><button class="btn btn-secondary" style="margin-top:10px" onclick="openSettings()">設定を開く</button>';return;}
+  if(!spTok()){b.innerHTML='<div class="wg-note">Spotifyと連携すると、再生中の曲を表示して操作できます（操作にはPremiumが必要です）。</div><button class="btn btn-primary" style="margin-top:10px" onclick="spAuth()">Spotifyと連携する</button>';return;}
+  if(!muS||muS.none||muS.err||!muS.item){b.innerHTML='<div class="wg-note">'+(muS&&muS.err?'取得できませんでした（'+muS.err+'）。連携し直すと直る場合があります。':'再生中のデバイスがありません。Spotifyアプリで曲を再生すると、ここに表示されます。')+'</div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-secondary" onclick="pollMu()">更新</button><button class="btn btn-secondary" onclick="spOut()">連携を解除</button></div>';return;}
+  var it=muS.item,im=it.album&&it.album.images&&(it.album.images[1]||it.album.images[0]),pr=it.duration_ms?Math.min(100,muS.progress_ms/it.duration_ms*100):0;
+  var ic={prev:'<path d="M6 5v14M19 5 9 12l10 7V5z" fill="currentColor"/>',next:'<path d="M18 5v14M5 5l10 7-10 7V5z" fill="currentColor"/>',play:'<path d="M7 4.5v15l13-7.5-13-7.5z" fill="currentColor"/>',pause:'<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/>'};
+  b.innerHTML='<div class="mu">'+(im?'<img src="'+im.url+'" alt="">':'<div class="mu-ph"></div>')+'<div style="flex:1;min-width:0"><div class="mu-n">'+esc(it.name)+'</div><div class="mu-a">'+esc((it.artists||[]).map(function(a){return a.name;}).join(', '))+'</div><div class="mu-bar"><i style="width:'+pr+'%"></i></div>'
+   +'<div class="mu-c"><button onclick="muCtl(\'previous\')" aria-label="前"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round">'+ic.prev+'</svg></button><button class="main" onclick="muCtl(\''+(muS.is_playing?'pause':'play')+'\')" aria-label="再生/一時停止"><svg viewBox="0 0 24 24">'+(muS.is_playing?ic.pause:ic.play)+'</svg></button><button onclick="muCtl(\'next\')" aria-label="次"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round">'+ic.next+'</svg></button></div></div></div>';
+}
+async function muCtl(a){
+  var m=(a==='pause'||a==='play')?'PUT':'POST';
+  try{var r=await spApi(m,'/me/player/'+a);if(r&&r.status===403)alert('操作にはSpotify Premiumが必要です');}catch(e){}
+  setTimeout(pollMu,400);
+}
+// settings additions
+var _rs2=renderSettings;
+renderSettings=function(){
+  _rs2();
+  var s=data.settings,on=!!spTok();
+  document.getElementById('set-content').insertAdjacentHTML('beforeend',
+    '<div class="set-group"><div class="set-title">ダッシュボード</div><div class="set-row"><span>ダッシュボードのタブを表示</span>'+tg('dash',s.dash)+'</div></div>'
+   +'<div class="set-group"><div class="set-title">Spotify連携</div>'
+   +'<p class="set-note">Spotify Developer Dashboardでアプリを作り、Client IDを入れて「連携する」を押してください。Redirect URIに下のURLを登録します。</p>'
+   +'<input type="text" class="song-in sp-field" id="sp-id" placeholder="Client ID" value="'+esc(s.spId||'')+'" onchange="data.settings.spId=this.value.trim();save();">'
+   +'<div class="sp-uri">'+esc(spRedirect())+'</div>'
+   +'<div class="set-row" style="margin-top:8px"><span>状態：'+(on?'連携済み':'未連携')+'</span>'+(on?'<button class="btn btn-secondary" style="padding:6px 14px" onclick="spOut()">解除</button>':'<button class="btn btn-primary" style="padding:6px 14px" onclick="spAuth()">連携する</button>')+'</div></div>');
+};
+(function(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('code')&&q.get('state')==='cc'){
+    spToken({grant_type:'authorization_code',code:q.get('code'),redirect_uri:spRedirect(),client_id:data.settings.spId,code_verifier:localStorage.getItem('cc-spv')})
+      .then(function(){history.replaceState({},'',spRedirect());if(!data.settings.widgets.includes('music'))data.settings.widgets.push('music');data.settings.dash=true;save();applyDash();showTab('dash',document.getElementById('ti-dash'));})
+      .catch(function(e){history.replaceState({},'',spRedirect());alert('Spotify連携に失敗しました：'+e.message);});
+  }else if(q.get('error')&&q.get('state')==='cc')history.replaceState({},'',spRedirect());
+})();
+
+// ── v8 ──
+var TABS=[['home','ti-home','ホーム'],['cal','ti-cal','カレンダー'],['stats','ti-stats','統計'],['dash','ti-dash','ダッシュ']];
+data.settings=Object.assign({tabNames:{},tabsShow:{},mileEvent:true},data.settings);
+function tabShown(k){return k==='dash'?!!data.settings.dash:data.settings.tabsShow[k]!==false;}
+function applyTabs(){
+  TABS.forEach(function(t){var el=document.getElementById(t[1]);if(!el)return;
+    el.style.display=tabShown(t[0])?'':'none';
+    var lb=el.querySelector('.tab-label');lb.textContent=(data.settings.tabNames[t[0]]||'').trim()||t[2];
+    el.setAttribute('aria-label',lb.textContent);});
+  var act=document.querySelector('.tab-item.active');
+  if(act&&getComputedStyle(act).display==='none'){var f=TABS.filter(function(t){return tabShown(t[0]);})[0];if(f)showTab(f[0],document.getElementById(f[1]));}
+  else if(act)movePill(false);
+}
+function toggleTab(k,el){
+  var on=tabShown(k);
+  if(on&&TABS.filter(function(t){return tabShown(t[0]);}).length<=1){alert('タブは1つ以上表示してください');if(el)el.checked=true;return;}
+  if(k==='dash'){data.settings.dash=!on;applyDash();}else data.settings.tabsShow[k]=!on;
+  save();applyTabs();
+}
+function renameTab(k,v){data.settings.tabNames[k]=v.trim().slice(0,6);save();applyTabs();}
+function toggleMile(v){data.settings.mileEvent=!!v;save();}
+function sw2(on,fn){return tg('x',on).replace(/onchange="[^"]*"/,'onchange="'+fn+'"');}
+var _rs3=renderSettings;
+renderSettings=function(){
+  _rs3();
+  var sc=document.getElementById('set-content');
+  Array.prototype.forEach.call(sc.querySelectorAll('.set-group'),function(g){var t=g.querySelector('.set-title');if(t&&t.textContent==='ダッシュボード')g.remove();});
+  sc.insertAdjacentHTML('afterbegin','<div class="set-group"><div class="set-title">タブバー（名前と表示）</div>'+TABS.map(function(t){
+    return '<div class="set-row"><input type="text" class="tab-name" maxlength="6" value="'+esc(data.settings.tabNames[t[0]]||'')+'" placeholder="'+t[2]+'" onchange="renameTab(\''+t[0]+'\',this.value)">'+sw2(tabShown(t[0]),'toggleTab(\''+t[0]+'\',this)')+'</div>';}).join('')
+    +'<p class="set-note">名前は6文字までです。空にすると元の名前に戻ります。</p></div>'
+    +'<div class="set-group"><div class="set-title">記念日</div><div class="set-row"><span>記念日のお祝い<small>100日・200日・1年などになった日に演出します</small></span>'+sw2(data.settings.mileEvent,'toggleMile(this.checked)')+'</div></div>');
+};
+function openSettings(){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-set').classList.add('active');
+  document.getElementById('tab-pill').classList.add('hide');
+  renderSettings();window.scrollTo(0,0);
+}
+var _st3=showTab;
+showTab=function(t,el){document.getElementById('tab-pill').classList.remove('hide');_st3(t,el);};
+// milestones
+function reachedMile(d){
+  var best=0;[100,200,300,365,500,730,1000,1095,1500,2000,3000].forEach(function(m){if(m<=d&&m>best)best=m;});
+  var y=Math.floor(d/365)*365;return y>best?y:best;
+}
+function mlabel(m){return m%365===0?(m/365)+'年':m+'日';}
+function checkMiles(){
+  var ev=[],ch=false;
+  data.persons.forEach(function(p){var r=reachedMile(getDays(p.since));
+    if(p.mileDone===undefined){p.mileDone=r;ch=true;}
+    else if(r>p.mileDone&&data.settings.mileEvent){p.mileDone=r;ch=true;ev.push(p.name+'さん '+mlabel(r));}});
+  if(ch)save();
+  if(ev.length){try{burst();}catch(e){}showConf('記念日おめでとう！','好きになってから '+ev.join('、')+' になりました。',[{label:'ありがとう',cls:'btn-primary',fn:closeConf}]);}
+}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)checkMiles();});
+// image crop
+var _ci=compressImg;
+compressImg=function(f,m,sq,cb){if(!sq)return _ci(f,m,sq,cb);openCrop(f,Math.max(m,240),cb);};
+function openCrop(f,m,cb){
+  var url=URL.createObjectURL(f),im=new Image();
+  im.onload=function(){
+    var V=Math.min(280,innerWidth-80),w=im.width,hh=im.height,base=V/Math.min(w,hh),z=1,ox=0,oy=0;
+    var ov=document.createElement('div');ov.className='overlay center';ov.style.zIndex=700;
+    ov.innerHTML='<div class="conf-modal" style="max-width:340px;text-align:center"><h2>トリミング</h2><p style="margin-bottom:12px">ドラッグで位置、スライダーで拡大します</p><canvas class="crop-c" width="'+V+'" height="'+V+'"></canvas><input type="range" min="1" max="4" step="0.01" value="1" style="width:80%;margin:14px 0 4px;accent-color:var(--rose)"><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-secondary" data-a="c">キャンセル</button><button class="btn btn-primary" data-a="o">決定</button></div></div>';
+    document.body.appendChild(ov);
+    var cv=ov.querySelector('canvas'),cx=cv.getContext('2d'),sl=ov.querySelector('input');
+    function sW(){return w*base*z;}function sH(){return hh*base*z;}
+    function clamp(){ox=Math.min(0,Math.max(V-sW(),ox));oy=Math.min(0,Math.max(V-sH(),oy));}
+    ox=(V-sW())/2;oy=(V-sH())/2;
+    function draw(){cx.clearRect(0,0,V,V);cx.drawImage(im,ox,oy,sW(),sH());
+      cx.save();cx.fillStyle='rgba(20,8,14,.5)';cx.beginPath();cx.rect(0,0,V,V);cx.arc(V/2,V/2,V/2-4,0,Math.PI*2,true);cx.fill('evenodd');cx.restore();
+      cx.strokeStyle='rgba(255,255,255,.9)';cx.lineWidth=2;cx.beginPath();cx.arc(V/2,V/2,V/2-4,0,Math.PI*2);cx.stroke();}
+    function setZ(nz){var a=(V/2-ox)/sW(),b=(V/2-oy)/sH();z=nz;ox=V/2-a*sW();oy=V/2-b*sH();clamp();draw();}
+    sl.oninput=function(){setZ(+sl.value);};
+    var ps={};
+    cv.onpointerdown=function(e){cv.setPointerCapture(e.pointerId);ps[e.pointerId]=[e.clientX,e.clientY];};
+    cv.onpointermove=function(e){var p=ps[e.pointerId];if(!p)return;var ids=Object.keys(ps);
+      if(ids.length===2){var a=ps[ids[0]],b=ps[ids[1]];ps[e.pointerId]=[e.clientX,e.clientY];var a2=ps[ids[0]],b2=ps[ids[1]];
+        var d1=Math.hypot(a[0]-b[0],a[1]-b[1]),d2=Math.hypot(a2[0]-b2[0],a2[1]-b2[1]);
+        if(d1>0){var nz=Math.min(4,Math.max(1,z*d2/d1));sl.value=nz;setZ(nz);}return;}
+      ox+=e.clientX-p[0];oy+=e.clientY-p[1];ps[e.pointerId]=[e.clientX,e.clientY];clamp();draw();};
+    cv.onpointerup=cv.onpointercancel=function(e){delete ps[e.pointerId];};
+    function close(){ov.remove();URL.revokeObjectURL(url);}
+    ov.querySelector('[data-a=c]').onclick=close;
+    ov.querySelector('[data-a=o]').onclick=function(){var o=document.createElement('canvas');o.width=o.height=m;var k=m/V;
+      o.getContext('2d').drawImage(im,ox*k,oy*k,sW()*k,sH()*k);close();cb(o.toDataURL('image/jpeg',.88));};
+    draw();
+  };
+  im.src=url;
+}
+applyTabs();
+setTimeout(checkMiles,700);
+
+// ── v9 ──
+// 設定の切り替えでは画面を作り直さない（作り直すとアニメーションが消えるため）
+setSet=function(k,v){data.settings[k]=v;save();renderHome();if(k==='dash')applyDash();};
+function placeSeg(seg,animate){
+  var pill=seg.querySelector('.seg-pill'),b=seg.querySelector('button.on');if(!pill)return;
+  if(!b){pill.style.width='0';return;}
+  if(!animate)pill.classList.add('no-anim');
+  pill.style.left=b.offsetLeft+'px';pill.style.top=b.offsetTop+'px';pill.style.width=b.offsetWidth+'px';pill.style.height=b.offsetHeight+'px';
+  if(!animate){void pill.offsetWidth;pill.classList.remove('no-anim');}
+}
+function initSegs(){
+  document.querySelectorAll('.seg').forEach(function(seg){
+    if(!seg.querySelector('.seg-pill')){var d=document.createElement('div');d.className='seg-pill no-anim';seg.insertBefore(d,seg.firstChild);}
+    placeSeg(seg,false);
+  });
+}
+var _rs4=renderSettings;
+renderSettings=function(){_rs4();initSegs();};
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('.seg button');if(!b)return;
+  var m=/setSet\('(\w+)','(\w+)'\)/.exec(b.getAttribute('onclick')||'');if(!m)return;
+  e.stopPropagation();e.preventDefault();
+  data.settings[m[1]]=m[2];save();
+  var seg=b.parentNode;
+  Array.prototype.forEach.call(seg.querySelectorAll('button'),function(x){x.classList.remove('on');});
+  b.classList.add('on');placeSeg(seg,true);
+},true);
+
+// ── v10 ──
+function toggleMenu(f){var w=document.getElementById('menu-wrap');w.classList.toggle('open',f===undefined?!w.classList.contains('open'):f);}
+function menuGo(fn){toggleMenu(false);setTimeout(fn,140);}
+document.addEventListener('pointerdown',function(e){var w=document.getElementById('menu-wrap');if(w.classList.contains('open')&&!w.contains(e.target))toggleMenu(false);});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')toggleMenu(false);});
+
+renderHome();
+</script>
+</body>
+</html>

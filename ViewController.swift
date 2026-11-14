@@ -35,10 +35,21 @@ final class MainTabBarController: UITabBarController, UITabBarControllerDelegate
     private var labels: [String: String] = [:]
     private var downloadURL: URL?
 
+    /// Rounded system font for the native tab titles, matching the page's
+    /// rounded-gothic look (Japanese glyphs fall back to Hiragino Maru Gothic).
+    private static let tabTitleFont: UIFont = {
+        let base = UIFont.systemFont(ofSize: 10, weight: .regular)
+        if let descriptor = base.fontDescriptor.withDesign(.rounded) {
+            return UIFont(descriptor: descriptor, size: 10)
+        }
+        return base
+    }()
+
     private static let bridgeJS = """
     (function(){
       var style = document.createElement('style');
-      style.textContent = '#tab-bar{display:none !important} .app{padding-bottom:24px !important}';
+      style.textContent = '#tab-bar{display:none !important} .app{padding-bottom:24px !important}'
+        + " *{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif !important}";
       document.head.appendChild(style);
       window.__nativeSetTab = function(key){
         var b = document.getElementById('ti-' + key);
@@ -130,6 +141,8 @@ final class MainTabBarController: UITabBarController, UITabBarControllerDelegate
                 title: labels[key] ?? def.title,
                 image: UIImage(systemName: def.icon),
                 selectedImage: UIImage(systemName: def.selectedIcon))
+            vc.tabBarItem.setTitleTextAttributes([.font: Self.tabTitleFont], for: .normal)
+            vc.tabBarItem.setTitleTextAttributes([.font: Self.tabTitleFont], for: .selected)
             controllers.append(vc)
         }
         viewControllers = controllers

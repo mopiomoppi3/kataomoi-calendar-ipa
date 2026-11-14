@@ -12,7 +12,19 @@
         A1B2C3D4E5F60003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60013 /* ViewController.swift */; };
         A1B2C3D4E5F60004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60014 /* Assets.xcassets */; };
         A1B2C3D4E5F60005 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60015 /* index.html */; };
+        A1B2C3D4E5F60120 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60101 /* Shared.swift */; };
+        A1B2C3D4E5F60121 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60101 /* Shared.swift */; };
+        A1B2C3D4E5F60122 /* KataomoiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60102 /* KataomoiWidget.swift */; };
+        A1B2C3D4E5F60123 /* KataomoiWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60100 /* KataomoiWidget.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+        A1B2C3D4E5F60151 /* PBXContainerItemProxy */ = {isa = PBXContainerItemProxy; containerPortal = A1B2C3D4E5F60050 /* Project object */; proxyType = 1; remoteGlobalIDString = A1B2C3D4E5F60140; remoteInfo = KataomoiWidget; };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+        A1B2C3D4E5F60133 /* Embed App Extensions */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = ( A1B2C3D4E5F60123 /* KataomoiWidget.appex in Embed App Extensions */ ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
         A1B2C3D4E5F60010 /* KataomoiCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KataomoiCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -22,44 +34,62 @@
         A1B2C3D4E5F60014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
         A1B2C3D4E5F60015 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
         A1B2C3D4E5F60016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+        A1B2C3D4E5F60100 /* KataomoiWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KataomoiWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+        A1B2C3D4E5F60101 /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
+        A1B2C3D4E5F60102 /* KataomoiWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KataomoiWidget.swift; sourceTree = "<group>"; };
+        A1B2C3D4E5F60103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+        A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KataomoiCalendar.entitlements; sourceTree = "<group>"; };
+        A1B2C3D4E5F60105 /* KataomoiWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KataomoiWidget.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
         A1B2C3D4E5F60020 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
+        A1B2C3D4E5F60131 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-        A1B2C3D4E5F60030 /* KataomoiCalendar */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60011 /* AppDelegate.swift */, A1B2C3D4E5F60012 /* SceneDelegate.swift */, A1B2C3D4E5F60013 /* ViewController.swift */, A1B2C3D4E5F60014 /* Assets.xcassets */, A1B2C3D4E5F60015 /* index.html */, A1B2C3D4E5F60016 /* Info.plist */ ); path = KataomoiCalendar; sourceTree = "<group>"; };
-        A1B2C3D4E5F60031 = {isa = PBXGroup; children = ( A1B2C3D4E5F60030 /* KataomoiCalendar */, A1B2C3D4E5F60032 /* Products */ ); sourceTree = "<group>"; };
-        A1B2C3D4E5F60032 /* Products */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60010 /* KataomoiCalendar.app */ ); name = Products; sourceTree = "<group>"; };
+        A1B2C3D4E5F60030 /* KataomoiCalendar */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60011 /* AppDelegate.swift */, A1B2C3D4E5F60012 /* SceneDelegate.swift */, A1B2C3D4E5F60013 /* ViewController.swift */, A1B2C3D4E5F60014 /* Assets.xcassets */, A1B2C3D4E5F60015 /* index.html */, A1B2C3D4E5F60016 /* Info.plist */, A1B2C3D4E5F60101 /* Shared.swift */, A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */ ); path = KataomoiCalendar; sourceTree = "<group>"; };
+        A1B2C3D4E5F60031 = {isa = PBXGroup; children = ( A1B2C3D4E5F60030 /* KataomoiCalendar */, A1B2C3D4E5F60110 /* KataomoiWidget */, A1B2C3D4E5F60032 /* Products */ ); sourceTree = "<group>"; };
+        A1B2C3D4E5F60032 /* Products */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60010 /* KataomoiCalendar.app */, A1B2C3D4E5F60100 /* KataomoiWidget.appex */ ); name = Products; sourceTree = "<group>"; };
+        A1B2C3D4E5F60110 /* KataomoiWidget */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60102 /* KataomoiWidget.swift */, A1B2C3D4E5F60103 /* Info.plist */, A1B2C3D4E5F60105 /* KataomoiWidget.entitlements */ ); path = KataomoiWidget; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-        A1B2C3D4E5F60040 /* KataomoiCalendar */ = {isa = PBXNativeTarget; buildConfigurationList = A1B2C3D4E5F60060 /* Build configuration list for PBXNativeTarget "KataomoiCalendar" */; buildPhases = ( A1B2C3D4E5F60021 /* Sources */, A1B2C3D4E5F60020 /* Frameworks */, A1B2C3D4E5F60022 /* Resources */ ); buildRules = ( ); dependencies = ( ); name = KataomoiCalendar; productName = KataomoiCalendar; productReference = A1B2C3D4E5F60010 /* KataomoiCalendar.app */; productType = "com.apple.product-type.application"; };
+        A1B2C3D4E5F60040 /* KataomoiCalendar */ = {isa = PBXNativeTarget; buildConfigurationList = A1B2C3D4E5F60060 /* Build configuration list for PBXNativeTarget "KataomoiCalendar" */; buildPhases = ( A1B2C3D4E5F60021 /* Sources */, A1B2C3D4E5F60020 /* Frameworks */, A1B2C3D4E5F60022 /* Resources */, A1B2C3D4E5F60133 /* Embed App Extensions */ ); buildRules = ( ); dependencies = ( A1B2C3D4E5F60150 /* PBXTargetDependency */ ); name = KataomoiCalendar; productName = KataomoiCalendar; productReference = A1B2C3D4E5F60010 /* KataomoiCalendar.app */; productType = "com.apple.product-type.application"; };
+        A1B2C3D4E5F60140 /* KataomoiWidget */ = {isa = PBXNativeTarget; buildConfigurationList = A1B2C3D4E5F60162 /* Build configuration list for PBXNativeTarget "KataomoiWidget" */; buildPhases = ( A1B2C3D4E5F60130 /* Sources */, A1B2C3D4E5F60131 /* Frameworks */, A1B2C3D4E5F60132 /* Resources */ ); buildRules = ( ); dependencies = ( ); name = KataomoiWidget; productName = KataomoiWidget; productReference = A1B2C3D4E5F60100 /* KataomoiWidget.appex */; productType = "com.apple.product-type.app-extension"; };
 /* End PBXNativeTarget section */
 
+/* Begin PBXTargetDependency section */
+        A1B2C3D4E5F60150 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = A1B2C3D4E5F60140 /* KataomoiWidget */; targetProxy = A1B2C3D4E5F60151 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
 /* Begin PBXProject section */
-        A1B2C3D4E5F60050 /* Project object */ = {isa = PBXProject; attributes = { LastSwiftUpdateCheck = 1600; LastUpgradeCheck = 1600; TargetAttributes = { A1B2C3D4E5F60040 = { CreatedOnToolsVersion = 16.0; }; }; }; buildConfigurationList = A1B2C3D4E5F60061 /* Build configuration list for PBXProject "KataomoiCalendar" */; compatibilityVersion = "Xcode 14.0"; developmentRegion = ja; hasScannedForEncodings = 0; knownRegions = ( en, Base, ja ); mainGroup = A1B2C3D4E5F60031; productRefGroup = A1B2C3D4E5F60032 /* Products */; projectDirPath = ""; projectRoot = ""; targets = ( A1B2C3D4E5F60040 /* KataomoiCalendar */ ); };
+        A1B2C3D4E5F60050 /* Project object */ = {isa = PBXProject; attributes = { LastSwiftUpdateCheck = 1600; LastUpgradeCheck = 1600; TargetAttributes = { A1B2C3D4E5F60040 = { CreatedOnToolsVersion = 16.0; }; A1B2C3D4E5F60140 = { CreatedOnToolsVersion = 16.0; }; }; }; buildConfigurationList = A1B2C3D4E5F60061 /* Build configuration list for PBXProject "KataomoiCalendar" */; compatibilityVersion = "Xcode 14.0"; developmentRegion = ja; hasScannedForEncodings = 0; knownRegions = ( en, Base, ja ); mainGroup = A1B2C3D4E5F60031; productRefGroup = A1B2C3D4E5F60032 /* Products */; projectDirPath = ""; projectRoot = ""; targets = ( A1B2C3D4E5F60040 /* KataomoiCalendar */, A1B2C3D4E5F60140 /* KataomoiWidget */ ); };
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
         A1B2C3D4E5F60022 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60004 /* Assets.xcassets in Resources */, A1B2C3D4E5F60005 /* index.html in Resources */ ); runOnlyForDeploymentPostprocessing = 0; };
+        A1B2C3D4E5F60132 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-        A1B2C3D4E5F60021 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60001 /* AppDelegate.swift in Sources */, A1B2C3D4E5F60002 /* SceneDelegate.swift in Sources */, A1B2C3D4E5F60003 /* ViewController.swift in Sources */ ); runOnlyForDeploymentPostprocessing = 0; };
+        A1B2C3D4E5F60021 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60001 /* AppDelegate.swift in Sources */, A1B2C3D4E5F60002 /* SceneDelegate.swift in Sources */, A1B2C3D4E5F60003 /* ViewController.swift in Sources */, A1B2C3D4E5F60120 /* Shared.swift in Sources */ ); runOnlyForDeploymentPostprocessing = 0; };
+        A1B2C3D4E5F60130 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60122 /* KataomoiWidget.swift in Sources */, A1B2C3D4E5F60121 /* Shared.swift in Sources */ ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-        A1B2C3D4E5F60070 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; INFOPLIST_FILE = KataomoiCalendar/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" ); MARKETING_VERSION = 1.1; PRODUCT_BUNDLE_IDENTIFIER = com.moppi.kataomoi; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
-        A1B2C3D4E5F60071 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; INFOPLIST_FILE = KataomoiCalendar/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" ); MARKETING_VERSION = 1.1; PRODUCT_BUNDLE_IDENTIFIER = com.moppi.kataomoi; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+        A1B2C3D4E5F60070 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CODE_SIGN_ENTITLEMENTS = KataomoiCalendar/KataomoiCalendar.entitlements; CURRENT_PROJECT_VERSION = 1; INFOPLIST_FILE = KataomoiCalendar/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" ); MARKETING_VERSION = 1.1; PRODUCT_BUNDLE_IDENTIFIER = com.moppi.kataomoi; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+        A1B2C3D4E5F60071 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CODE_SIGN_ENTITLEMENTS = KataomoiCalendar/KataomoiCalendar.entitlements; CURRENT_PROJECT_VERSION = 1; INFOPLIST_FILE = KataomoiCalendar/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" ); MARKETING_VERSION = 1.1; PRODUCT_BUNDLE_IDENTIFIER = com.moppi.kataomoi; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
         A1B2C3D4E5F60072 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_ENABLE_OBJC_WEAK = YES; CLANG_WARN_DOCUMENTATION_COMMENTS = YES; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE; CODE_SIGN_STYLE = Automatic; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_STRICT_OBJC_MSGSEND = YES; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu11; GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LOCALIZATION_PREFS = ""; MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; MTL_FAST_MATH = YES; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }; name = Debug; };
         A1B2C3D4E5F60073 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ANALYZER_NONNULL = YES; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_ENABLE_OBJC_WEAK = YES; CLANG_WARN_DOCUMENTATION_COMMENTS = YES; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE; CODE_SIGN_STYLE = Automatic; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = NO; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu11; GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LOCALIZATION_PREFS = ""; MTL_ENABLE_DEBUG_INFO = NO; MTL_FAST_MATH = YES; SDKROOT = iphoneos; SWIFT_OPTIMIZATION_LEVEL = "-O"; VALIDATE_PRODUCT = YES; }; name = Release; };
+        A1B2C3D4E5F60160 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_ENTITLEMENTS = KataomoiWidget/KataomoiWidget.entitlements; CURRENT_PROJECT_VERSION = 1; INFOPLIST_FILE = KataomoiWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks" ); MARKETING_VERSION = 1.1; PRODUCT_BUNDLE_IDENTIFIER = com.moppi.kataomoi.widget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+        A1B2C3D4E5F60161 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_ENTITLEMENTS = KataomoiWidget/KataomoiWidget.entitlements; CURRENT_PROJECT_VERSION = 1; INFOPLIST_FILE = KataomoiWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks" ); MARKETING_VERSION = 1.1; PRODUCT_BUNDLE_IDENTIFIER = com.moppi.kataomoi.widget; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
         A1B2C3D4E5F60060 /* Build configuration list for PBXNativeTarget "KataomoiCalendar" */ = {isa = XCConfigurationList; buildConfigurations = ( A1B2C3D4E5F60070 /* Debug */, A1B2C3D4E5F60071 /* Release */ ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
         A1B2C3D4E5F60061 /* Build configuration list for PBXProject "KataomoiCalendar" */ = {isa = XCConfigurationList; buildConfigurations = ( A1B2C3D4E5F60072 /* Debug */, A1B2C3D4E5F60073 /* Release */ ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+        A1B2C3D4E5F60162 /* Build configuration list for PBXNativeTarget "KataomoiWidget" */ = {isa = XCConfigurationList; buildConfigurations = ( A1B2C3D4E5F60160 /* Debug */, A1B2C3D4E5F60161 /* Release */ ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
     };
     rootObject = A1B2C3D4E5F60050 /* Project object */;

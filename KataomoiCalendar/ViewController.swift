@@ -1,5 +1,7 @@
 import UIKit
 import SwiftUI
+import AuthenticationServices
+import CryptoKit
 import PhotosUI
 import UniformTypeIdentifiers
 import CoreLocation
@@ -2128,26 +2130,185 @@ struct WeatherWidget: View {
     }
 }
 
+// MARK: - Spotify now playing
+
+struct SpotifyNowPlaying: Decodable {
+    struct Artist: Decodable { let name: String }
+    struct Album: Decodable {
+        struct Img: Decodable { let url: String }
+        let images: [Img]
+    }
+    struct Item: Decodable {
+        let name: String
+        let artists: [Artist]
+        let album: Album
+        let duration_ms: Int
+    }
+    let is_playing: Bool
+    let progress_ms: Int?
+    let item: Item?
+}
+
+final class AuthPresenter: NSObject, ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first?.windows.first(where: { $0.isKeyWindow }) ?? ASPresentationAnchor()
+    }
+}
+
+@MainActor
+final class SpotifyModel: ObservableObject {
+    @Published var nowPlaying: SpotifyNowPlaying?
+    @Published var loaded = false
+    @Published var authError: String?
+
+    var clientID = ""
+    private let redirectURI = "kataomoi://callback"
+    private var authSession: ASWebAuthenticationSession?
+    private let presenter = AuthPresenter()
+
+    var isConnected: Bool { UserDefaults.standard.string(forKey: "spotifyRefresh") != nil }
+
+    private func ud(_ key: String) -> String? { UserDefaults.standard.string(forKey: key) }
+    private func setUD(_ key: String, _ value: String?) {
+        if let value { UserDefaults.standard.set(value, forKey: key) }
+        else { UserDefaults.standard.removeObject(forKey: key) }
+    }
+
+    func disconnect() {
+        setUD("spotifyAccess", nil)
+        setUD("spotifyRefresh", nil)
+        UserDefaults.standard.removeObject(forKey: "spotifyExpiry")
+        nowPlaying = nil
+        loaded = false
+    }
+
+    func connect() {
+        guard !clientID.isEmpty else { return }
+        let verifier = Self.randomString(64)
+        setUD("spotifyVerifier", verifier)
+        var comps = URLComponents(string: "https://accounts.spotify.com/authorize")!
+        comps.queryItems = [
+            URLQueryItem(name: "client_id", value: clientID),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "redirect_uri", value: redirectURI),
+            URLQueryItem(name: "scope", value: "user-read-currently-playing user-read-playback-state"),
+            URLQueryItem(name: "code_challenge_method", value: "S256"),
+            URLQueryItem(name: "code_challenge", value: Self.challenge(for: verifier))
+        ]
+        guard let url = comps.url else { return }
+        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "kataomoi") { [weak self] callback, error in
+            Task { @MainActor in
+                guard let self else { return }
+                if let callback,
+                   let code = URLComponents(url: callback, resolvingAgainstBaseURL: false)?
+                       .queryItems?.first(where: { $0.name == "code" })?.value {
+                    await self.exchange(code: code)
+                } else if let error {
+                    self.authError = error.localizedDescription
+                }
+            }
+        }
+        session.presentationContextProvider = presenter
+        authSession = session
+        session.start()
+    }
+
+    private struct TokenResponse: Decodable {
+        let access_token: String
+        let refresh_token: String?
+        let expires_in: Int
+    }
+
+    private func exchange(code: String) async {
+        guard let verifier = ud("spotifyVerifier") else { return }
+        let ok = await tokenRequest(body: [
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": redirectURI,
+            "client_id": clientID,
+            "code_verifier": verifier
+        ])
+        if ok { await refresh() }
+    }
+
+    private func tokenRequest(body: [String: String]) async -> Bool {
+        let allowed = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+        var req = URLRequest(url: URL(string: "https://accounts.spotify.com/api/token")!)
+        req.httpMethod = "POST"
+        req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        req.httpBody = body.map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: allowed) ?? $0.value)" }
+            .joined(separator: "&").data(using: .utf8)
+        do {
+            let (data, _) = try await URLSession.shared.data(for: req)
+            let token = try JSONDecoder().decode(TokenResponse.self, from: data)
+            setUD("spotifyAccess", token.access_token)
+            if let refresh = token.refresh_token { setUD("spotifyRefresh", refresh) }
+            UserDefaults.standard.set(Date().timeIntervalSince1970 + Double(token.expires_in), forKey: "spotifyExpiry")
+            return true
+        } catch {
+            authError = error.localizedDescription
+            return false
+        }
+    }
+
+    private func validToken() async -> String? {
+        if let access = ud("spotifyAccess"),
+           UserDefaults.standard.double(forKey: "spotifyExpiry") > Date().timeIntervalSince1970 + 30 {
+            return access
+        }
+        guard let refresh = ud("spotifyRefresh") else { return nil }
+        let ok = await tokenRequest(body: [
+            "grant_type": "refresh_token",
+            "refresh_token": refresh,
+            "client_id": clientID
+        ])
+        return ok ? ud("spotifyAccess") : nil
+    }
+
+    func refresh() async {
+        guard isConnected else { loaded = true; return }
+        guard let token = await validToken() else { loaded = true; return }
+        var req = URLRequest(url: URL(string: "https://api.spotify.com/v1/me/player/currently-playing")!)
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        do {
+            let (data, response) = try await URLSession.shared.data(for: req)
+            if let http = response as? HTTPURLResponse, http.statusCode == 200 {
+                nowPlaying = try JSONDecoder().decode(SpotifyNowPlaying.self, from: data)
+            } else {
+                nowPlaying = nil
+            }
+        } catch {
+            authError = error.localizedDescription
+        }
+        loaded = true
+    }
+
+    nonisolated static func randomString(_ length: Int) -> String {
+        let chars = Array("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
+        return String((0..<length).map { _ in chars.randomElement()! })
+    }
+
+    nonisolated static func challenge(for verifier: String) -> String {
+        let digest = SHA256.hash(data: Data(verifier.utf8))
+        return Data(digest).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+}
+
 struct MusicWidget: View {
     @EnvironmentObject var store: CalendarStore
     let goSettings: () -> Void
+    @StateObject private var spotify = SpotifyModel()
 
     var body: some View {
         let withSongs = store.data.persons.filter { ($0.song ?? "").isEmpty == false }
-        VStack(alignment: .leading, spacing: 10) {
-            if store.data.settings.spId.isEmpty && withSongs.isEmpty {
-                Text("設定でSpotifyのClient IDを入れるか、各人に曲のURLを設定すると、ここから開けます。")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(store.theme.sub)
-                    .lineSpacing(4)
-                Button("設定を開く") { goSettings() }
-                    .buttonStyle(.glass)
-            } else if withSongs.isEmpty {
-                Text("曲が設定されている人がいません。設定の「登録した人」からSpotifyのURLを入れられます。")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(store.theme.sub)
-                    .lineSpacing(4)
-            } else {
+        VStack(alignment: .leading, spacing: 12) {
+            nowPlayingSection
+            if !withSongs.isEmpty {
+                Divider()
                 ForEach(withSongs) { person in
                     HStack(spacing: 12) {
                         PersonAvatar(person: person, size: 36)
@@ -2165,6 +2326,102 @@ struct MusicWidget: View {
                                 .buttonStyle(.glass)
                         }
                     }
+                }
+            } else if !store.data.settings.spId.isEmpty {
+                Text("曲が設定されている人がいません。設定の「登録した人」からSpotifyのURLを入れられます。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+                    .lineSpacing(4)
+            }
+        }
+        .task {
+            spotify.clientID = store.data.settings.spId
+            while !Task.isCancelled {
+                await spotify.refresh()
+                try? await Task.sleep(for: .seconds(15))
+            }
+        }
+    }
+
+    private var nowPlayingSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if store.data.settings.spId.isEmpty {
+                Text("Spotifyで再生中の曲を表示するには、設定でClient IDを入れて連携してください。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+                    .lineSpacing(4)
+                Button("設定を開く") { goSettings() }
+                    .buttonStyle(.glass)
+            } else if !spotify.isConnected {
+                Text("Spotifyと連携すると、再生中の曲がここに表示されます。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+                    .lineSpacing(4)
+                Button("Spotifyと連携") {
+                    spotify.clientID = store.data.settings.spId
+                    spotify.connect()
+                }
+                .buttonStyle(.glass)
+                if let authError = spotify.authError {
+                    Text(authError)
+                        .font(.system(.caption2, design: .rounded))
+                        .foregroundStyle(store.theme.muted)
+                }
+            } else if let np = spotify.nowPlaying, let item = np.item {
+                HStack(spacing: 12) {
+                    AsyncImage(url: URL(string: item.album.images.first?.url ?? "")) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        RoundedRectangle(cornerRadius: 10).fill(store.theme.petal)
+                    }
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.name)
+                            .font(.system(.subheadline, design: .rounded).weight(.bold))
+                            .foregroundStyle(store.theme.text)
+                            .lineLimit(1)
+                        Text(item.artists.map { $0.name }.joined(separator: ", "))
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundStyle(store.theme.muted)
+                            .lineLimit(1)
+                        HStack(spacing: 4) {
+                            Image(systemName: np.is_playing ? "play.fill" : "pause.fill")
+                                .font(.system(size: 9))
+                            Text(np.is_playing ? "再生中" : "一時停止中")
+                                .font(.system(.caption2, design: .rounded).weight(.semibold))
+                        }
+                        .foregroundStyle(store.theme.rose)
+                    }
+                    Spacer()
+                }
+                if let progress = np.progress_ms, item.duration_ms > 0 {
+                    ProgressView(value: Double(progress), total: Double(item.duration_ms))
+                        .tint(store.theme.rose)
+                }
+            } else if spotify.loaded {
+                HStack(spacing: 10) {
+                    Image(systemName: "music.note")
+                        .foregroundStyle(store.theme.muted)
+                    Text("今は再生していません")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(store.theme.sub)
+                }
+            } else {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("読み込み中…")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(store.theme.sub)
+                }
+            }
+            if spotify.isConnected {
+                HStack {
+                    Spacer()
+                    Button("連携を解除") { spotify.disconnect() }
+                        .font(.system(.caption2, design: .rounded))
+                        .foregroundStyle(store.theme.muted)
+                        .buttonStyle(.plain)
                 }
             }
         }
@@ -2403,7 +2660,7 @@ struct SettingsView: View {
         } header: {
             Text("Spotify連携")
         } footer: {
-            Text("各人の曲のURLは「登録した人」から設定でき、カレンダーとウィジェットからSpotifyで開けます。")
+            Text("再生中の曲を表示するには、Spotifyの開発者ダッシュボードで、このアプリのリダイレクトURIに「kataomoi://callback」を追加してください。各人の曲のURLは「登録した人」から設定できます。")
         }
     }
 

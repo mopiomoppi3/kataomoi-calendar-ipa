@@ -22,11 +22,12 @@ jobs:
             CODE_SIGNING_REQUIRED=NO
       - name: Package IPA
         run: |
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "build/Build/Products/Release-iphoneos/KataomoiCalendar.app/Info.plist")
           mkdir -p Payload
           cp -r "build/Build/Products/Release-iphoneos/KataomoiCalendar.app" Payload/
-          zip -r KataomoiCalendar-unsigned.ipa Payload
+          zip -r "KataomoiCalendar-v${VERSION}.ipa" Payload
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: KataomoiCalendar-unsigned
-          path: KataomoiCalendar-unsigned.ipa
+          path: KataomoiCalendar-v*.ipa

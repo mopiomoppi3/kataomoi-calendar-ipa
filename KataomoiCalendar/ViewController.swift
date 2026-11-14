@@ -278,7 +278,7 @@ struct BackupFile: Codable {
 // MARK: - Themes
 
 enum AppThemeKey: String, CaseIterable, Identifiable {
-    case pink, lavender, mint, peach, sky, white
+    case pink, lavender, mint, peach, sky, lemon, coral, grape, ocean, cocoa, berry, white
     var id: String { rawValue }
     var label: String {
         switch self {
@@ -287,6 +287,12 @@ enum AppThemeKey: String, CaseIterable, Identifiable {
         case .mint: return "ミント"
         case .peach: return "ピーチ"
         case .sky: return "スカイ"
+        case .lemon: return "レモン"
+        case .coral: return "コーラル"
+        case .grape: return "グレープ"
+        case .ocean: return "オーシャン"
+        case .cocoa: return "ココア"
+        case .berry: return "ベリー"
         case .white: return "ホワイト"
         }
     }
@@ -331,6 +337,36 @@ struct AppTheme {
                             blush: Color(hex: "#99cff5"), petal: Color(hex: "#ddeeff"),
                             cream: Color(hex: "#f2f8ff"), card: Color.white.opacity(0.93),
                             text: Color(hex: "#08182e"), sub: Color(hex: "#1a4a78"), muted: Color(hex: "#6090c0"))
+        case .lemon:
+            return AppTheme(key: key, rose: Color(hex: "#d9940d"), deep: Color(hex: "#9c6d00"),
+                            blush: Color(hex: "#f7d774"), petal: Color(hex: "#fdf3cd"),
+                            cream: Color(hex: "#fffdf0"), card: Color.white.opacity(0.93),
+                            text: Color(hex: "#2e2000"), sub: Color(hex: "#7a5a00"), muted: Color(hex: "#bfa050"))
+        case .coral:
+            return AppTheme(key: key, rose: Color(hex: "#f0654a"), deep: Color(hex: "#c23e22"),
+                            blush: Color(hex: "#ffb09d"), petal: Color(hex: "#ffe9e2"),
+                            cream: Color(hex: "#fff7f3"), card: Color.white.opacity(0.93),
+                            text: Color(hex: "#33100a"), sub: Color(hex: "#8a3020"), muted: Color(hex: "#cf8672"))
+        case .grape:
+            return AppTheme(key: key, rose: Color(hex: "#b04fd8"), deep: Color(hex: "#7e2ba8"),
+                            blush: Color(hex: "#dda5f2"), petal: Color(hex: "#f6e3fc"),
+                            cream: Color(hex: "#fdf5ff"), card: Color.white.opacity(0.93),
+                            text: Color(hex: "#26083a"), sub: Color(hex: "#63228a"), muted: Color(hex: "#a878c8"))
+        case .ocean:
+            return AppTheme(key: key, rose: Color(hex: "#17809e"), deep: Color(hex: "#0b5a72"),
+                            blush: Color(hex: "#7fcadb"), petal: Color(hex: "#dcf3f8"),
+                            cream: Color(hex: "#f2fafc"), card: Color.white.opacity(0.93),
+                            text: Color(hex: "#06222e"), sub: Color(hex: "#155e75"), muted: Color(hex: "#6399ab"))
+        case .cocoa:
+            return AppTheme(key: key, rose: Color(hex: "#a9714b"), deep: Color(hex: "#7c4a26"),
+                            blush: Color(hex: "#d9b08c"), petal: Color(hex: "#f3e6d8"),
+                            cream: Color(hex: "#fbf6ef"), card: Color.white.opacity(0.93),
+                            text: Color(hex: "#2a1808"), sub: Color(hex: "#6e4525"), muted: Color(hex: "#b08d68"))
+        case .berry:
+            return AppTheme(key: key, rose: Color(hex: "#c2255c"), deep: Color(hex: "#8f1239"),
+                            blush: Color(hex: "#f78fb0"), petal: Color(hex: "#fde0ea"),
+                            cream: Color(hex: "#fff5f8"), card: Color.white.opacity(0.93),
+                            text: Color(hex: "#33060f"), sub: Color(hex: "#8f1239"), muted: Color(hex: "#c2707f"))
         case .white:
             return AppTheme(key: key, rose: Color(hex: "#1c1c1e"), deep: Color(hex: "#000000"),
                             blush: Color(hex: "#d1d1d6"), petal: Color(hex: "#f2f2f7"),
@@ -359,7 +395,8 @@ final class CalendarStore: ObservableObject {
     @Published var pendingDay: String?
 
     static let personColors = ["#e8698a", "#9b6fd4", "#3daa88", "#e88a50", "#4a9fd4",
-                               "#c0496d", "#7b5ea7", "#2d8a68", "#b06030", "#1860a0"]
+                               "#c0496d", "#7b5ea7", "#2d8a68", "#b06030", "#1860a0",
+                               "#d6336c", "#e3a008", "#17809e", "#5b8c5a", "#8a5a2b", "#5a67d8"]
     static let relations = ["片思い", "気になる", "友達", "両思い", "恋人", "推し"]
     static let milestones = [100, 200, 300, 365, 500, 730, 1000, 1095, 1500, 2000, 3000]
 
@@ -847,98 +884,111 @@ struct HomeView: View {
         let entries = store.entries(for: person.id)
         let lastLike = entries.last?.like
         let days = DateKit.daysSince(person.since)
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
-                PersonAvatar(person: person, size: 46)
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text(person.name)
-                            .font(.system(.headline, design: .rounded))
-                            .foregroundStyle(store.theme.text)
-                            .lineLimit(1)
-                        Text(person.rel ?? "片思い")
-                            .font(.system(.caption2, design: .rounded).weight(.semibold))
-                            .foregroundStyle(store.theme.rose)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2)
-                            .background(store.theme.petal, in: Capsule())
-                    }
-                    Text("\(DateKit.japanese(person.since))から")
-                        .font(.system(.caption, design: .rounded))
-                        .foregroundStyle(store.theme.muted)
-                }
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                PersonAvatar(person: person, size: 84)
                 Spacer()
                 Button {
                     deleteTarget = person
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(store.theme.muted)
-                        .padding(6)
+                        .padding(4)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("削除")
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text("\(days)")
-                        .font(.system(.title, design: .rounded).weight(.bold))
-                        .foregroundStyle(store.theme.deep)
-                    Text("日間")
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(store.theme.sub)
-                }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("最新の好き度: \(lastLike.map { "\($0)/100" } ?? "—")")
-                        .font(.system(.caption, design: .rounded))
-                        .foregroundStyle(store.theme.muted)
-                    Text(CalendarStore.nextMilestoneText(days))
-                        .font(.system(.caption, design: .rounded))
-                        .foregroundStyle(store.theme.muted)
-                    if let bText = CalendarStore.birthdayText(person.birthday) {
-                        Text(bText)
-                            .font(.system(.caption, design: .rounded).weight(bText == "今日が誕生日" ? .bold : .regular))
-                            .foregroundStyle(bText == "今日が誕生日" ? store.theme.rose : store.theme.muted)
-                    }
-                }
-                Spacer()
+            HStack(alignment: .center, spacing: 8) {
+                Text(person.name)
+                    .font(.system(.title2, design: .rounded).weight(.bold))
+                    .foregroundStyle(store.theme.text)
+                    .lineLimit(1)
+                Text(person.rel ?? "片思い")
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundStyle(store.theme.rose)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(store.theme.petal, in: Capsule())
             }
+            .padding(.top, 16)
+
+            Text("\(DateKit.japanese(person.since))から")
+                .font(.system(.body, design: .rounded))
+                .foregroundStyle(store.theme.muted)
+                .padding(.top, 6)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(days)")
+                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .foregroundStyle(store.theme.deep)
+                Text("日間")
+                    .font(.system(.title3, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+            }
+            .padding(.top, 12)
+
+            Text("最新の好き度: \(lastLike.map { "\($0)" } ?? "—")")
+                .font(.system(.body, design: .rounded))
+                .foregroundStyle(store.theme.muted)
+                .padding(.top, 2)
 
             HStack(spacing: 8) {
-                Button {
-                    store.calendarPersonID = person.id
-                    store.pendingDay = DateKit.todayString()
-                    goCalendar()
-                } label: {
-                    Text("今日を記録")
-                        .font(.system(.subheadline, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 9)
-                        .background(Color(hex: person.color), in: Capsule())
-                }
-                .buttonStyle(.plain)
-
-                if (person.rel ?? "片思い") == "片思い" {
-                    Button {
-                        mutualTarget = person
-                    } label: {
-                        Text("両思いになった")
-                            .font(.system(.subheadline, design: .rounded).weight(.bold))
-                            .foregroundStyle(store.theme.rose)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule().strokeBorder(store.theme.rose, lineWidth: 1.4)
-                            )
-                    }
-                    .buttonStyle(.plain)
+                Text(CalendarStore.nextMilestoneText(days))
+                    .font(.system(.subheadline, design: .rounded).weight(.medium))
+                    .foregroundStyle(store.theme.sub)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(store.theme.petal, in: Capsule())
+                if let bText = CalendarStore.birthdayText(person.birthday) {
+                    Text(bText)
+                        .font(.system(.subheadline, design: .rounded).weight(bText == "今日が誕生日" ? .bold : .medium))
+                        .foregroundStyle(bText == "今日が誕生日" ? .white : store.theme.sub)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(bText == "今日が誕生日" ? store.theme.rose : store.theme.petal, in: Capsule())
                 }
             }
+            .padding(.top, 14)
+
+            Button {
+                store.calendarPersonID = person.id
+                store.pendingDay = DateKit.todayString()
+                goCalendar()
+            } label: {
+                Text("今日を記録")
+                    .font(.system(.body, design: .rounded).weight(.bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 15)
+                    .background(Color(hex: person.color), in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 18)
+
+            if (person.rel ?? "片思い") == "片思い" {
+                Button {
+                    mutualTarget = person
+                } label: {
+                    Text("両思いになった")
+                        .font(.system(.body, design: .rounded).weight(.bold))
+                        .foregroundStyle(store.theme.rose)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Capsule().strokeBorder(store.theme.rose, lineWidth: 1.6))
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 10)
+            }
         }
-        .padding(14)
-        .cardStyle()
+        .padding(22)
+        .cardStyle(cornerRadius: 30)
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 30, bottomLeading: 0, bottomTrailing: 0, topTrailing: 30))
+                .fill(LinearGradient(colors: [Color(hex: person.color), store.theme.blush], startPoint: .leading, endPoint: .trailing))
+                .frame(height: 4)
+        }
         .contentShape(Rectangle())
         .onTapGesture {
             store.calendarPersonID = person.id
@@ -947,7 +997,6 @@ struct HomeView: View {
     }
 
 }
-
 // MARK: - Add person
 
 struct AddPersonView: View {
@@ -1875,6 +1924,17 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     private var usedFallback = false
     private var fallbackWork: DispatchWorkItem?
 
+    static let symbols: [Int: String] = [
+        0: "sun.max.fill", 1: "sun.max.fill", 2: "cloud.sun.fill", 3: "cloud.fill",
+        45: "cloud.fog.fill", 48: "cloud.fog.fill",
+        51: "cloud.drizzle.fill", 53: "cloud.drizzle.fill", 55: "cloud.drizzle.fill",
+        61: "cloud.rain.fill", 63: "cloud.rain.fill", 65: "cloud.heavyrain.fill",
+        71: "cloud.snow.fill", 73: "cloud.snow.fill", 75: "cloud.snow.fill", 77: "cloud.snow.fill",
+        80: "cloud.drizzle.fill", 81: "cloud.rain.fill", 82: "cloud.heavyrain.fill",
+        85: "cloud.snow.fill", 86: "cloud.snow.fill",
+        95: "cloud.bolt.rain.fill", 96: "cloud.bolt.rain.fill", 99: "cloud.bolt.rain.fill"
+    ]
+
     static let labels: [Int: String] = [
         0: "快晴", 1: "晴れ", 2: "晴れ時々くもり", 3: "くもり", 45: "霧", 48: "霧",
         51: "小雨", 53: "霧雨", 55: "霧雨", 61: "雨", 63: "雨", 65: "強い雨",
@@ -1981,7 +2041,10 @@ struct WeatherWidget: View {
         Group {
             if let r = model.response {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    HStack(alignment: .center, spacing: 12) {
+                        Image(systemName: WeatherModel.symbols[r.current.weather_code] ?? "cloud.fill")
+                            .font(.system(size: 36))
+                            .symbolRenderingMode(.multicolor)
                         Text("\(Int(r.current.temperature_2m.rounded()))°")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .foregroundStyle(store.theme.deep)
@@ -2000,6 +2063,9 @@ struct WeatherWidget: View {
                                 .font(.system(.subheadline, design: .rounded).weight(.bold))
                                 .foregroundStyle(store.theme.sub)
                                 .frame(width: 34, alignment: .leading)
+                            Image(systemName: WeatherModel.symbols[r.daily.weather_code[i]] ?? "cloud.fill")
+                                .font(.system(size: 15))
+                                .symbolRenderingMode(.multicolor)
                             Text(WeatherModel.labels[r.daily.weather_code[i]] ?? "—")
                                 .font(.system(.subheadline, design: .rounded))
                                 .foregroundStyle(store.theme.text)
@@ -2016,10 +2082,16 @@ struct WeatherWidget: View {
                             if i > 0 { Divider() }
                         }
                     }
-                    Button("更新") { model.reload() }
-                        .font(.system(.caption, design: .rounded).weight(.semibold))
-                        .buttonStyle(.glass)
-                        .padding(.top, 4)
+                    HStack {
+                        Button("更新") { model.reload() }
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .buttonStyle(.glass)
+                        Spacer()
+                        Text("天気データ: Open-Meteo API")
+                            .font(.system(.caption2, design: .rounded))
+                            .foregroundStyle(store.theme.muted)
+                    }
+                    .padding(.top, 4)
                 }
             } else if model.failed {
                 VStack(alignment: .leading, spacing: 10) {
@@ -2510,6 +2582,9 @@ struct CelebrationView: View {
     let celebration: Celebration
 
     @State private var exploded = false
+    @State private var fallen = false
+    @State private var ringsOut = false
+    @State private var shown = false
     @State private var pulse = false
 
     private let palette = ["#e8698a", "#f2a7c3", "#ff8fab", "#c9aaee", "#ffd36e", "#8ed8c0"]
@@ -2522,66 +2597,127 @@ struct CelebrationView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.35)
-                .ignoresSafeArea()
+        GeometryReader { geo in
+            ZStack {
+                Color.black.opacity(0.35)
+                    .ignoresSafeArea()
+                Circle()
+                    .fill(store.theme.blush.opacity(0.5))
+                    .frame(width: 300, height: 300)
+                    .blur(radius: 70)
+                    .offset(x: -110, y: -200)
+                Circle()
+                    .fill(store.theme.rose.opacity(0.4))
+                    .frame(width: 260, height: 260)
+                    .blur(radius: 70)
+                    .offset(x: 120, y: 220)
 
-            pieces
+                fallingPieces(width: geo.size.width)
+                burstPieces
 
-            VStack(spacing: 12) {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 62))
-                    .foregroundStyle(Color(hex: "#e8698a"))
-                    .scaleEffect(pulse ? 1.1 : 0.94)
-                    .animation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true), value: pulse)
-                Text("両思いおめでとう")
-                    .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundStyle(store.theme.deep)
-                Text("\(celebration.person.name)さんへの想いが届きました\n片思いの期間は \(days)日")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(store.theme.sub)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(5)
-                Button("とじる") {
-                    store.celebration = nil
+                VStack(spacing: 12) {
+                    ZStack {
+                        ForEach(0..<3, id: \.self) { i in
+                            Circle()
+                                .strokeBorder(store.theme.rose.opacity(0.45), lineWidth: 2)
+                                .frame(width: 96, height: 96)
+                                .scaleEffect(ringsOut ? 2.1 : 0.55)
+                                .opacity(ringsOut ? 0 : 0.55)
+                                .animation(.easeOut(duration: 1.9).delay(Double(i) * 0.28), value: ringsOut)
+                        }
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 66))
+                            .foregroundStyle(store.theme.blush.opacity(0.6))
+                            .blur(radius: 16)
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 62))
+                            .foregroundStyle(LinearGradient(colors: [Color(hex: "#ff8fab"), Color(hex: "#e8698a")],
+                                                           startPoint: .top, endPoint: .bottom))
+                            .scaleEffect(pulse ? 1.1 : 0.94)
+                            .animation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true), value: pulse)
+                    }
+                    .frame(height: 112)
+
+                    Text("両思いおめでとう")
+                        .font(.system(.title, design: .rounded).weight(.bold))
+                        .foregroundStyle(store.theme.deep)
+                    Text("\(celebration.person.name)さんへの想いが届きました\n片思いの期間は \(days)日")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(store.theme.sub)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(5)
+                    HStack(spacing: 6) {
+                        ForEach(0..<3, id: \.self) { _ in
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(store.theme.blush)
+                        }
+                    }
+                    Button("とじる") {
+                        store.celebration = nil
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(store.theme.rose)
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .padding(.top, 4)
                 }
-                .buttonStyle(.glassProminent)
-                .tint(store.theme.rose)
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
-                .padding(.top, 4)
+                .padding(28)
+                .frame(maxWidth: 330)
+                .cardStyle(cornerRadius: 30)
+                .padding(.horizontal, 24)
+                .scaleEffect(shown ? 1 : 0.8)
+                .opacity(shown ? 1 : 0)
             }
-            .padding(28)
-            .frame(maxWidth: 320)
-            .cardStyle(cornerRadius: 28)
-            .padding(.horizontal, 24)
         }
         .onAppear {
             exploded = true
+            fallen = true
             pulse = true
+            ringsOut = true
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.72)) { shown = true }
         }
     }
 
-    private var pieces: some View {
+    private var burstPieces: some View {
         ZStack {
-            ForEach(0..<26, id: \.self) { i in
+            ForEach(0..<34, id: \.self) { i in
                 let angle = Double(i) * 137.5 * Double.pi / 180
-                let radius = 100 + Double((i * 37) % 130)
+                let radius = 110 + Double((i * 37) % 150)
                 let dx = cos(angle) * radius
                 let dy = sin(angle) * radius - 40
-                piece(i: i)
-                    .offset(x: exploded ? dx : 0, y: exploded ? dy + 230 : 0)
+                pieceShape(i: i)
+                    .offset(x: exploded ? dx : 0, y: exploded ? dy + 240 : 0)
                     .opacity(exploded ? 0 : 1)
-                    .animation(.easeOut(duration: 1.7).delay(Double(i) * 0.014), value: exploded)
+                    .animation(.easeOut(duration: 1.9).delay(Double(i) * 0.012), value: exploded)
             }
         }
     }
 
-    private func piece(i: Int) -> some View {
+    private func fallingPieces(width: CGFloat) -> some View {
+        ZStack {
+            ForEach(0..<22, id: \.self) { i in
+                let span = max(Int(width) - 24, 1)
+                let x = CGFloat((i * 83) % span) - width / 2 + 12
+                let delay = Double(i % 11) * 0.16
+                let duration = 2.4 + Double(i % 5) * 0.35
+                pieceShape(i: i)
+                    .rotationEffect(.degrees(fallen ? Double((i * 71) % 260) - 130 : 0))
+                    .offset(x: x, y: fallen ? 560 : -500)
+                    .animation(.easeIn(duration: duration).delay(delay), value: fallen)
+            }
+        }
+    }
+
+    private func pieceShape(i: Int) -> some View {
         let color = Color(hex: palette[i % palette.count])
         let size = CGFloat(9 + (i % 4) * 3)
         return Group {
-            if store.data.settings.style == "heart" {
+            if store.data.settings.style == "heart" || i % 3 == 0 {
                 Image(systemName: "heart.fill")
+                    .font(.system(size: size))
+                    .foregroundStyle(color)
+            } else if i % 3 == 1 {
+                Image(systemName: "star.fill")
                     .font(.system(size: size))
                     .foregroundStyle(color)
             } else {

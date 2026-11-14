@@ -424,7 +424,7 @@ final class CalendarStore: ObservableObject {
 
     func addPerson(name: String, since: String, met: String?, color: String, rel: String, birthday: String?, icon: String?) {
         let p = Person(id: String(Int(Date().timeIntervalSince1970 * 1000)),
-                       name: name, since: since, met: met, color: color, rel: rel, birthday: birthday, icon: icon)
+                       name: name, since: since, met: met, color: color, rel: rel, icon: icon, birthday: birthday)
         data.persons.append(p)
         calendarPersonID = p.id
         save()
@@ -2461,7 +2461,7 @@ struct PersonSettingsRow: View {
                         if person.birthday != nil {
                             DatePicker("", selection: Binding(
                                 get: { DateKit.date(from: person.birthday ?? "") ?? Date() },
-                                set: { store.updatePerson(person.id) { $0.birthday = DateKit.string(from: $0) } }
+                                set: { newDate in store.updatePerson(person.id) { $0.birthday = DateKit.string(from: newDate) } }
                             ), displayedComponents: .date)
                             .labelsHidden()
                             Button("外す") {

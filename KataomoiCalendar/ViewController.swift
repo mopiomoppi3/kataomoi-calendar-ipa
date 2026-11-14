@@ -1690,13 +1690,13 @@ struct StatsView: View {
             }
 
             Text("好きになってから \(DateKit.daysSince(person.since)) 日間" + (person.met.map { " ／ 出会った日: \(DateKit.japanese($0))" } ?? ""))
+                .font(.system(.caption, design: .rounded))
+                .foregroundStyle(store.theme.muted)
             if let birthday = person.birthday {
                 Text("誕生日: \(DateKit.japanese(birthday))" + (CalendarStore.birthdayText(birthday).map { " ／ \($0)" } ?? ""))
                     .font(.system(.caption, design: .rounded))
                     .foregroundStyle(store.theme.muted)
             }
-                .font(.system(.caption, design: .rounded))
-                .foregroundStyle(store.theme.muted)
 
             if let last {
                 GeometryReader { geo in

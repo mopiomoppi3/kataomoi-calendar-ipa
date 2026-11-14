@@ -764,8 +764,6 @@ struct HomeView: View {
                 .padding(.bottom, 28)
             }
             .background(store.theme.cream.ignoresSafeArea())
-            .navigationTitle("片思いカレンダー")
-            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showAdd) {
                 AddPersonView()
                     .environmentObject(store)

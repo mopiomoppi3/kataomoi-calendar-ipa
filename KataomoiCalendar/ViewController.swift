@@ -886,7 +886,7 @@ struct HomeView: View {
         let days = DateKit.daysSince(person.since)
         return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
-                PersonAvatar(person: person, size: 84)
+                PersonAvatar(person: person, size: 60)
                 Spacer()
                 Button {
                     deleteTarget = person
@@ -902,7 +902,7 @@ struct HomeView: View {
 
             HStack(alignment: .center, spacing: 8) {
                 Text(person.name)
-                    .font(.system(.title2, design: .rounded).weight(.bold))
+                    .font(.system(.title3, design: .rounded).weight(.bold))
                     .foregroundStyle(store.theme.text)
                     .lineLimit(1)
                 Text(person.rel ?? "片思い")
@@ -912,45 +912,45 @@ struct HomeView: View {
                     .padding(.vertical, 4)
                     .background(store.theme.petal, in: Capsule())
             }
-            .padding(.top, 16)
+            .padding(.top, 10)
 
             Text("\(DateKit.japanese(person.since))から")
-                .font(.system(.body, design: .rounded))
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(store.theme.muted)
                 .padding(.top, 6)
 
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text("\(days)")
-                    .font(.system(size: 56, weight: .bold, design: .rounded))
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
                     .foregroundStyle(store.theme.deep)
                 Text("日間")
-                    .font(.system(.title3, design: .rounded))
+                    .font(.system(.body, design: .rounded))
                     .foregroundStyle(store.theme.sub)
             }
-            .padding(.top, 12)
+            .padding(.top, 8)
 
             Text("最新の好き度: \(lastLike.map { "\($0)" } ?? "—")")
-                .font(.system(.body, design: .rounded))
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(store.theme.muted)
                 .padding(.top, 2)
 
             HStack(spacing: 8) {
                 Text(CalendarStore.nextMilestoneText(days))
-                    .font(.system(.subheadline, design: .rounded).weight(.medium))
+                    .font(.system(.caption, design: .rounded).weight(.medium))
                     .foregroundStyle(store.theme.sub)
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
+                    .padding(.vertical, 5)
                     .background(store.theme.petal, in: Capsule())
                 if let bText = CalendarStore.birthdayText(person.birthday) {
                     Text(bText)
-                        .font(.system(.subheadline, design: .rounded).weight(bText == "今日が誕生日" ? .bold : .medium))
+                        .font(.system(.caption, design: .rounded).weight(bText == "今日が誕生日" ? .bold : .medium))
                         .foregroundStyle(bText == "今日が誕生日" ? .white : store.theme.sub)
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
+                        .padding(.vertical, 5)
                         .background(bText == "今日が誕生日" ? store.theme.rose : store.theme.petal, in: Capsule())
                 }
             }
-            .padding(.top, 14)
+            .padding(.top, 10)
 
             Button {
                 store.calendarPersonID = person.id
@@ -958,37 +958,32 @@ struct HomeView: View {
                 goCalendar()
             } label: {
                 Text("今日を記録")
-                    .font(.system(.body, design: .rounded).weight(.bold))
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
+                    .padding(.vertical, 11)
                     .background(Color(hex: person.color), in: Capsule())
             }
             .buttonStyle(.plain)
-            .padding(.top, 18)
+            .padding(.top, 12)
 
             if (person.rel ?? "片思い") == "片思い" {
                 Button {
                     mutualTarget = person
                 } label: {
                     Text("両思いになった")
-                        .font(.system(.body, design: .rounded).weight(.bold))
+                        .font(.system(.subheadline, design: .rounded).weight(.bold))
                         .foregroundStyle(store.theme.rose)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
+                        .padding(.vertical, 10)
                         .background(Capsule().strokeBorder(store.theme.rose, lineWidth: 1.6))
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 10)
+                .padding(.top, 8)
             }
         }
-        .padding(22)
-        .cardStyle(cornerRadius: 30)
-        .overlay(alignment: .top) {
-            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 30, bottomLeading: 0, bottomTrailing: 0, topTrailing: 30))
-                .fill(LinearGradient(colors: [Color(hex: person.color), store.theme.blush], startPoint: .leading, endPoint: .trailing))
-                .frame(height: 4)
-        }
+        .padding(16)
+        .cardStyle(cornerRadius: 26)
         .contentShape(Rectangle())
         .onTapGesture {
             store.calendarPersonID = person.id
@@ -1867,6 +1862,7 @@ struct DashView: View {
             .background(store.theme.cream.ignoresSafeArea())
             .navigationTitle("ウィジェット")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { weather.loadIfNeeded() }
         }
     }
 
@@ -1907,7 +1903,7 @@ struct WeatherResponse: Decodable {
         let weather_code: [Int]
         let temperature_2m_max: [Double]
         let temperature_2m_min: [Double]
-        let precipitation_probability_max: [Double?]
+        let precipitation_probability_max: [Double?]?
     }
     let current: Current
     let daily: Daily
@@ -1918,11 +1914,11 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     @Published var response: WeatherResponse?
     @Published var place = ""
     @Published var failed = false
+    @Published var errorText: String?
 
     private let manager = CLLocationManager()
     private var started = false
     private var usedFallback = false
-    private var fallbackWork: DispatchWorkItem?
 
     static let symbols: [Int: String] = [
         0: "sun.max.fill", 1: "sun.max.fill", 2: "cloud.sun.fill", 3: "cloud.fill",
@@ -1945,71 +1941,61 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     func loadIfNeeded() {
         if started { return }
         started = true
-        manager.delegate = self
-        switch manager.authorizationStatus {
-        case .notDetermined:
-            manager.requestWhenInUseAuthorization()
-            scheduleFallback()
-        case .denied, .restricted:
-            fallback()
-        default:
-            manager.requestLocation()
-            scheduleFallback()
-        }
+        start()
     }
 
     func reload() {
         response = nil
         failed = false
+        errorText = nil
         usedFallback = false
         started = true
+        start()
+    }
+
+    func requestLocationAccess() {
         manager.delegate = self
         switch manager.authorizationStatus {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
-            scheduleFallback()
-        case .denied, .restricted:
-            fallback()
-        default:
+        case .authorizedWhenInUse, .authorizedAlways:
             manager.requestLocation()
-            scheduleFallback()
+        case .denied, .restricted:
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        @unknown default:
+            break
         }
     }
 
-    private func scheduleFallback() {
-        fallbackWork?.cancel()
-        let work = DispatchWorkItem { [weak self] in
-            Task { @MainActor in
-                guard let self, self.response == nil else { return }
-                self.fallback()
-            }
+    private func start() {
+        manager.delegate = self
+        // Show Tokyo right away so the widget never sits empty;
+        // a real location fix replaces it when it arrives.
+        if response == nil { fallback() }
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.requestLocation()
+        default:
+            break
         }
-        fallbackWork = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: work)
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        fallbackWork?.cancel()
         guard let loc = locations.last else { return }
         Task { await fetch(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude, place: "現在地") }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // While the permission prompt is still up, errors can arrive early;
-        // the authorization callback and the timeout fallback cover that case.
-        if manager.authorizationStatus != .notDetermined {
-            fallback()
-        }
+        // Tokyo weather is already on screen as the baseline; nothing to do.
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch manager.authorizationStatus {
-        case .authorizedWhenInUse, .authorizedAlways:
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
             manager.requestLocation()
-        case .denied, .restricted:
-            fallback()
-        default:
-            break
         }
     }
 
@@ -2020,15 +2006,22 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     }
 
     private func fetch(lat: Double, lon: Double, place: String) async {
-        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(String(format: "%.2f", lat))&longitude=\(String(format: "%.2f", lon))&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=5"
-        guard let url = URL(string: urlString) else { failed = true; return }
+        let posix = Locale(identifier: "en_US_POSIX")
+        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(String(format: "%.2f", locale: posix, lat))&longitude=\(String(format: "%.2f", locale: posix, lon))&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=5"
+        guard let url = URL(string: urlString) else {
+            errorText = "URLを作れませんでした"
+            if response == nil { failed = true }
+            return
+        }
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             response = try JSONDecoder().decode(WeatherResponse.self, from: data)
             self.place = place
             failed = false
+            errorText = nil
         } catch {
-            failed = true
+            errorText = error.localizedDescription
+            if response == nil { failed = true }
         }
     }
 }
@@ -2070,7 +2063,7 @@ struct WeatherWidget: View {
                                 .font(.system(.subheadline, design: .rounded))
                                 .foregroundStyle(store.theme.text)
                             Spacer()
-                            Text("降水 " + (r.daily.precipitation_probability_max[i].map { "\(Int($0))%" } ?? "—"))
+                            Text(precipText(r, i))
                                 .font(.system(.caption, design: .rounded))
                                 .foregroundStyle(store.theme.muted)
                             Text("\(Int(r.daily.temperature_2m_max[i].rounded()))° / \(Int(r.daily.temperature_2m_min[i].rounded()))°")
@@ -2082,10 +2075,15 @@ struct WeatherWidget: View {
                             if i > 0 { Divider() }
                         }
                     }
-                    HStack {
+                    HStack(spacing: 8) {
                         Button("更新") { model.reload() }
                             .font(.system(.caption, design: .rounded).weight(.semibold))
                             .buttonStyle(.glass)
+                        if model.place != "現在地" {
+                            Button("現在地を使う") { model.requestLocationAccess() }
+                                .font(.system(.caption, design: .rounded).weight(.semibold))
+                                .buttonStyle(.glass)
+                        }
                         Spacer()
                         Text("天気データ: Open-Meteo API")
                             .font(.system(.caption2, design: .rounded))
@@ -2098,6 +2096,11 @@ struct WeatherWidget: View {
                     Text("天気を取得できませんでした。")
                         .font(.system(.subheadline, design: .rounded))
                         .foregroundStyle(store.theme.sub)
+                    if let errorText = model.errorText {
+                        Text(errorText)
+                            .font(.system(.caption2, design: .rounded))
+                            .foregroundStyle(store.theme.muted)
+                    }
                     Button("再読み込み") { model.reload() }
                         .buttonStyle(.glass)
                 }
@@ -2111,6 +2114,12 @@ struct WeatherWidget: View {
                 .onAppear { model.loadIfNeeded() }
             }
         }
+        .task { model.loadIfNeeded() }
+    }
+
+    private func precipText(_ r: WeatherResponse, _ i: Int) -> String {
+        guard let arr = r.daily.precipitation_probability_max, i < arr.count, let v = arr[i] else { return "降水 —" }
+        return "降水 \(Int(v.rounded()))%"
     }
 
     private func weekdayLabel(_ day: String) -> String {

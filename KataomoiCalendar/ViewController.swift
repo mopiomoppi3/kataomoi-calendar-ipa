@@ -576,7 +576,7 @@ struct ContentView: View {
         TabDef(key: "home", title: "ホーム", icon: "house.fill"),
         TabDef(key: "cal", title: "カレンダー", icon: "calendar"),
         TabDef(key: "stats", title: "統計", icon: "chart.bar.xaxis"),
-        TabDef(key: "dash", title: "ダッシュ", icon: "square.grid.2x2.fill")
+        TabDef(key: "dash", title: "ウィジェット", icon: "square.grid.2x2.fill")
     ]
 
     func tabShown(_ key: String) -> Bool {
@@ -737,7 +737,7 @@ struct HomeView: View {
                     if store.data.persons.isEmpty {
                         EmptyState(message: "片思い中の人がいません\n下から追加してみよう")
                     } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 12) {
+                        LazyVStack(spacing: 12) {
                             ForEach(store.data.persons) { person in
                                 personCard(person)
                             }
@@ -803,9 +803,26 @@ struct HomeView: View {
         let entries = store.entries(for: person.id)
         let lastLike = entries.last?.like
         let days = DateKit.daysSince(person.since)
-        return VStack(alignment: .leading, spacing: 7) {
-            HStack(alignment: .top) {
-                PersonAvatar(person: person, size: 40)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                PersonAvatar(person: person, size: 46)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(person.name)
+                            .font(.system(.headline, design: .rounded))
+                            .foregroundStyle(store.theme.text)
+                            .lineLimit(1)
+                        Text(person.rel ?? "片思い")
+                            .font(.system(.caption2, design: .rounded).weight(.semibold))
+                            .foregroundStyle(store.theme.rose)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(store.theme.petal, in: Capsule())
+                    }
+                    Text("\(DateKit.japanese(person.since))から")
+                        .font(.system(.caption, design: .rounded))
+                        .foregroundStyle(store.theme.muted)
+                }
                 Spacer()
                 Button {
                     deleteTarget = person
@@ -819,69 +836,56 @@ struct HomeView: View {
                 .accessibilityLabel("削除")
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(person.name)
-                    .font(.system(.headline, design: .rounded))
-                    .foregroundStyle(store.theme.text)
-                    .lineLimit(1)
-                Text(person.rel ?? "片思い")
-                    .font(.system(.caption2, design: .rounded).weight(.semibold))
-                    .foregroundStyle(store.theme.rose)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 2)
-                    .background(store.theme.petal, in: Capsule())
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(days)")
+                        .font(.system(.title, design: .rounded).weight(.bold))
+                        .foregroundStyle(store.theme.deep)
+                    Text("日間")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(store.theme.sub)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("最新の好き度: \(lastLike.map { "\($0)/100" } ?? "—")")
+                        .font(.system(.caption, design: .rounded))
+                        .foregroundStyle(store.theme.muted)
+                    Text(CalendarStore.nextMilestoneText(days))
+                        .font(.system(.caption, design: .rounded))
+                        .foregroundStyle(store.theme.muted)
+                }
+                Spacer()
             }
 
-            Text("\(DateKit.japanese(person.since))から")
-                .font(.system(.caption, design: .rounded))
-                .foregroundStyle(store.theme.muted)
-
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(days)")
-                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                    .foregroundStyle(store.theme.deep)
-                Text("日間")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(store.theme.sub)
-            }
-
-            Text("最新の好き度: \(lastLike.map { "\($0)/100" } ?? "—")")
-                .font(.system(.caption, design: .rounded))
-                .foregroundStyle(store.theme.muted)
-
-            Text(CalendarStore.nextMilestoneText(days))
-                .font(.system(.caption, design: .rounded))
-                .foregroundStyle(store.theme.muted)
-
-            Button {
-                store.calendarPersonID = person.id
-                store.pendingDay = DateKit.todayString()
-                goCalendar()
-            } label: {
-                Text("今日を記録")
-                    .font(.system(.caption, design: .rounded).weight(.bold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color(hex: person.color), in: Capsule())
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 2)
-
-            if (person.rel ?? "片思い") == "片思い" {
+            HStack(spacing: 8) {
                 Button {
-                    mutualTarget = person
+                    store.calendarPersonID = person.id
+                    store.pendingDay = DateKit.todayString()
+                    goCalendar()
                 } label: {
-                    Text("両思いになった")
-                        .font(.system(.caption, design: .rounded).weight(.bold))
-                        .foregroundStyle(store.theme.rose)
+                    Text("今日を記録")
+                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
-                        .background(
-                            Capsule().strokeBorder(store.theme.rose, lineWidth: 1.4)
-                        )
+                        .padding(.vertical, 9)
+                        .background(Color(hex: person.color), in: Capsule())
                 }
                 .buttonStyle(.plain)
+
+                if (person.rel ?? "片思い") == "片思い" {
+                    Button {
+                        mutualTarget = person
+                    } label: {
+                        Text("両思いになった")
+                            .font(.system(.subheadline, design: .rounded).weight(.bold))
+                            .foregroundStyle(store.theme.rose)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule().strokeBorder(store.theme.rose, lineWidth: 1.4)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
         .padding(14)
@@ -892,6 +896,7 @@ struct HomeView: View {
             goCalendar()
         }
     }
+
 }
 
 // MARK: - Add person
@@ -1745,7 +1750,7 @@ struct DashView: View {
                 .padding(.bottom, 28)
             }
             .background(store.theme.cream.ignoresSafeArea())
-            .navigationTitle("ダッシュ")
+            .navigationTitle("ウィジェット")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -1802,6 +1807,7 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     private let manager = CLLocationManager()
     private var started = false
     private var usedFallback = false
+    private var fallbackWork: DispatchWorkItem?
 
     static let labels: [Int: String] = [
         0: "快晴", 1: "晴れ", 2: "晴れ時々くもり", 3: "くもり", 45: "霧", 48: "霧",
@@ -1814,29 +1820,70 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
         if started { return }
         started = true
         manager.delegate = self
-        manager.requestWhenInUseAuthorization()
-        manager.requestLocation()
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+            scheduleFallback()
+        case .denied, .restricted:
+            fallback()
+        default:
+            manager.requestLocation()
+            scheduleFallback()
+        }
     }
 
     func reload() {
         response = nil
         failed = false
         usedFallback = false
-        manager.requestLocation()
+        started = true
+        manager.delegate = self
+        switch manager.authorizationStatus {
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+            scheduleFallback()
+        case .denied, .restricted:
+            fallback()
+        default:
+            manager.requestLocation()
+            scheduleFallback()
+        }
+    }
+
+    private func scheduleFallback() {
+        fallbackWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            Task { @MainActor in
+                guard let self, self.response == nil else { return }
+                self.fallback()
+            }
+        }
+        fallbackWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: work)
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        fallbackWork?.cancel()
         guard let loc = locations.last else { return }
         Task { await fetch(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude, place: "現在地") }
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        fallback()
+        // While the permission prompt is still up, errors can arrive early;
+        // the authorization callback and the timeout fallback cover that case.
+        if manager.authorizationStatus != .notDetermined {
+            fallback()
+        }
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.requestLocation()
+        case .denied, .restricted:
             fallback()
+        default:
+            break
         }
     }
 
@@ -2213,7 +2260,7 @@ struct SettingsView: View {
         } header: {
             Text("Spotify連携")
         } footer: {
-            Text("各人の曲のURLは「登録した人」から設定でき、カレンダーとダッシュからSpotifyで開けます。")
+            Text("各人の曲のURLは「登録した人」から設定でき、カレンダーとウィジェットからSpotifyで開けます。")
         }
     }
 

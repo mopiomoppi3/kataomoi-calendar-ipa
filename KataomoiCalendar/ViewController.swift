@@ -1151,8 +1151,7 @@ struct CalendarView: View {
                 .padding(.bottom, 28)
             }
             .background(store.theme.cream.ignoresSafeArea())
-            .navigationTitle("カレンダー")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .onAppear {
                 selectedPersonID = person?.id
                 consumePendingDay()
@@ -1683,8 +1682,7 @@ struct StatsView: View {
                 .padding(.bottom, 28)
             }
             .background(store.theme.cream.ignoresSafeArea())
-            .navigationTitle("統計")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 
@@ -1860,8 +1858,7 @@ struct DashView: View {
                 .padding(.bottom, 28)
             }
             .background(store.theme.cream.ignoresSafeArea())
-            .navigationTitle("ウィジェット")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .onAppear { weather.loadIfNeeded() }
         }
     }
@@ -2201,8 +2198,7 @@ struct SettingsView: View {
             .fontDesign(.rounded)
             .scrollContentBackground(.hidden)
             .background(store.theme.cream.ignoresSafeArea())
-            .navigationTitle("設定")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .alert("お知らせ", isPresented: Binding(
                 get: { alertText != nil }, set: { if !$0 { alertText = nil } }
             )) {

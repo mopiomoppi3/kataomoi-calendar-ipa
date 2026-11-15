@@ -2,6 +2,8 @@ import UIKit
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
+import ActivityKit
+import WidgetKit
 import PhotosUI
 import UniformTypeIdentifiers
 import CoreLocation
@@ -50,6 +52,14 @@ extension Color {
         } else {
             self = .pink
         }
+    }
+
+    var hexString: String {
+        let ui = UIColor(self)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        ui.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return String(format: "#%02x%02x%02x",
+                      Int((r * 255).rounded()), Int((g * 255).rounded()), Int((b * 255).rounded()))
     }
 }
 
@@ -146,6 +156,25 @@ enum ImageData {
 
 // MARK: - Data model (compatible with the web version's backup JSON)
 
+struct CustomField: Codable, Identifiable, Equatable, Hashable {
+    var id: String
+    var label: String
+    var value: String
+
+    init(id: String, label: String, value: String) {
+        self.id = id; self.label = label; self.value = value
+    }
+
+    private enum CodingKeys: String, CodingKey { case id, label, value }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        label = try c.decodeIfPresent(String.self, forKey: .label) ?? ""
+        value = try c.decodeIfPresent(String.self, forKey: .value) ?? ""
+    }
+}
+
 struct Person: Identifiable, Codable, Hashable {
     var id: String
     var name: String
@@ -158,17 +187,18 @@ struct Person: Identifiable, Codable, Hashable {
     var mutual: String?
     var birthday: String?
     var mileDone: Int?
+    var fields: [CustomField] = []
 
     init(id: String, name: String, since: String, met: String? = nil, color: String,
          rel: String? = "片思い", icon: String? = nil, song: String? = nil,
-         mutual: String? = nil, birthday: String? = nil, mileDone: Int? = nil) {
+         mutual: String? = nil, birthday: String? = nil, mileDone: Int? = nil, fields: [CustomField] = []) {
         self.id = id; self.name = name; self.since = since; self.met = met
         self.color = color; self.rel = rel; self.icon = icon; self.song = song
-        self.mutual = mutual; self.birthday = birthday; self.mileDone = mileDone
+        self.mutual = mutual; self.birthday = birthday; self.mileDone = mileDone; self.fields = fields
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, since, met, color, rel, icon, song, mutual, birthday, mileDone
+        case id, name, since, met, color, rel, icon, song, mutual, birthday, mileDone, fields
     }
 
     init(from decoder: Decoder) throws {
@@ -184,6 +214,7 @@ struct Person: Identifiable, Codable, Hashable {
         mutual = try c.decodeIfPresent(String.self, forKey: .mutual)
         birthday = try c.decodeIfPresent(String.self, forKey: .birthday)
         mileDone = try c.decodeIfPresent(Int.self, forKey: .mileDone)
+        fields = try c.decodeIfPresent([CustomField].self, forKey: .fields) ?? []
     }
 }
 
@@ -248,15 +279,35 @@ struct AppSettings: Codable, Hashable {
     }
 }
 
+struct TodoItem: Codable, Identifiable, Equatable {
+    var id: String
+    var text: String
+    var done: Bool = false
+
+    private enum CodingKeys: String, CodingKey { case id, text, done }
+
+    init(id: String, text: String, done: Bool = false) {
+        self.id = id; self.text = text; self.done = done
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        text = try c.decodeIfPresent(String.self, forKey: .text) ?? ""
+        done = try c.decodeIfPresent(Bool.self, forKey: .done) ?? false
+    }
+}
+
 struct CalendarData: Codable {
     var persons: [Person] = []
     var entries: [Entry] = []
     var settings: AppSettings = AppSettings()
+    var todos: [TodoItem] = []
 
-    private enum CodingKeys: String, CodingKey { case persons, entries, settings }
+    private enum CodingKeys: String, CodingKey { case persons, entries, settings, todos }
 
-    init(persons: [Person] = [], entries: [Entry] = [], settings: AppSettings = AppSettings()) {
-        self.persons = persons; self.entries = entries; self.settings = settings
+    init(persons: [Person] = [], entries: [Entry] = [], settings: AppSettings = AppSettings(), todos: [TodoItem] = []) {
+        self.persons = persons; self.entries = entries; self.settings = settings; self.todos = todos
     }
 
     init(from decoder: Decoder) throws {
@@ -264,6 +315,7 @@ struct CalendarData: Codable {
         persons = try c.decodeIfPresent([Person].self, forKey: .persons) ?? []
         entries = try c.decodeIfPresent([Entry].self, forKey: .entries) ?? []
         settings = try c.decodeIfPresent(AppSettings.self, forKey: .settings) ?? AppSettings()
+        todos = try c.decodeIfPresent([TodoItem].self, forKey: .todos) ?? []
     }
 }
 
@@ -275,12 +327,13 @@ struct BackupFile: Codable {
     var persons: [Person]
     var entries: [Entry]
     var settings: AppSettings?
+    var todos: [TodoItem]?
 }
 
 // MARK: - Themes
 
 enum AppThemeKey: String, CaseIterable, Identifiable {
-    case pink, lavender, mint, peach, sky, lemon, coral, grape, ocean, cocoa, berry, white
+    case pink, lavender, mint, peach, sky, lemon, coral, grape, ocean, cocoa, berry, white, custom
     var id: String { rawValue }
     var label: String {
         switch self {
@@ -296,6 +349,7 @@ enum AppThemeKey: String, CaseIterable, Identifiable {
         case .cocoa: return "ココア"
         case .berry: return "ベリー"
         case .white: return "ホワイト"
+        case .custom: return "カスタム"
         }
     }
 }
@@ -374,7 +428,32 @@ struct AppTheme {
                             blush: Color(hex: "#d1d1d6"), petal: Color(hex: "#f2f2f7"),
                             cream: Color.white, card: Color.white.opacity(0.96),
                             text: Color(hex: "#1c1c1e"), sub: Color(hex: "#5c5c60"), muted: Color(hex: "#8e8e93"))
+        case .custom:
+            return AppTheme.custom("#e8698a")
         }
+    }
+
+    static func custom(_ hex: String) -> AppTheme {
+        let base = UIColor(hex: hex)
+        func mix(_ other: UIColor, _ amount: CGFloat) -> Color {
+            var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+            var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+            base.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+            other.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+            return Color(red: Double(r1 + (r2 - r1) * amount),
+                         green: Double(g1 + (g2 - g1) * amount),
+                         blue: Double(b1 + (b2 - b1) * amount))
+        }
+        return AppTheme(key: .custom,
+                        rose: Color(hex: hex),
+                        deep: mix(.black, 0.25),
+                        blush: mix(.white, 0.45),
+                        petal: mix(.white, 0.86),
+                        cream: mix(.white, 0.95),
+                        card: Color.white.opacity(0.93),
+                        text: mix(.black, 0.8),
+                        sub: mix(.black, 0.45),
+                        muted: mix(UIColor(white: 0.55, alpha: 1), 0.45))
     }
 }
 
@@ -390,6 +469,7 @@ struct Celebration: Identifiable {
 final class CalendarStore: ObservableObject {
     @Published var data: CalendarData
     @Published var themeKey: AppThemeKey
+    @Published var customColorHex: String
     @Published var celebration: Celebration?
     @Published var milestoneText: String?
     @Published var birthdayText: String?
@@ -402,7 +482,16 @@ final class CalendarStore: ObservableObject {
     static let relations = ["片思い", "気になる", "友達", "両思い", "恋人", "推し"]
     static let milestones = [100, 200, 300, 365, 500, 730, 1000, 1095, 1500, 2000, 3000]
 
-    var theme: AppTheme { AppTheme.of(themeKey) }
+    var theme: AppTheme { theme(for: themeKey) }
+
+    func theme(for key: AppThemeKey) -> AppTheme {
+        key == .custom ? AppTheme.custom(customColorHex) : AppTheme.of(key)
+    }
+
+    func setCustomColor(_ hex: String) {
+        customColorHex = hex
+        save()
+    }
 
     private var fileURL: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -422,6 +511,7 @@ final class CalendarStore: ObservableObject {
         data = loaded
         let savedTheme = UserDefaults.standard.string(forKey: "kataomoi-theme") ?? "pink"
         themeKey = AppThemeKey(rawValue: savedTheme) ?? .pink
+        customColorHex = UserDefaults.standard.string(forKey: "kataomoi-theme-custom") ?? "#e8698a"
         calendarPersonID = loaded.persons.first?.id
     }
 
@@ -430,6 +520,20 @@ final class CalendarStore: ObservableObject {
             try? encoded.write(to: fileURL, options: [.atomic])
         }
         UserDefaults.standard.set(themeKey.rawValue, forKey: "kataomoi-theme")
+        UserDefaults.standard.set(customColorHex, forKey: "kataomoi-theme-custom")
+        writeWidgetSnapshot()
+    }
+
+    private func writeWidgetSnapshot() {
+        let snapshot = WidgetSnapshot(
+            persons: data.persons.map { .init(name: $0.name, since: $0.since, color: $0.color, rel: $0.rel ?? "片思い", birthday: $0.birthday) },
+            todos: data.todos.map { .init(text: $0.text, done: $0.done) },
+            updatedAt: DateKit.todayString()
+        )
+        if let url = SharedStore.fileURL, let encoded = try? JSONEncoder().encode(snapshot) {
+            try? encoded.write(to: url, options: [.atomic])
+        }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func setTheme(_ key: AppThemeKey) {
@@ -461,11 +565,29 @@ final class CalendarStore: ObservableObject {
         save()
     }
 
-    func addPerson(name: String, since: String, met: String?, color: String, rel: String, birthday: String?, icon: String?) {
+    func addPerson(name: String, since: String, met: String?, color: String, rel: String, birthday: String?, icon: String?, song: String? = nil, fields: [CustomField] = []) {
         let p = Person(id: String(Int(Date().timeIntervalSince1970 * 1000)),
-                       name: name, since: since, met: met, color: color, rel: rel, icon: icon, birthday: birthday)
+                       name: name, since: since, met: met, color: color, rel: rel, icon: icon, song: song, birthday: birthday, fields: fields)
         data.persons.append(p)
         calendarPersonID = p.id
+        save()
+    }
+
+    func addTodo(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        data.todos.append(TodoItem(id: String(Int(Date().timeIntervalSince1970 * 1000)), text: trimmed))
+        save()
+    }
+
+    func toggleTodo(_ id: String) {
+        guard let i = data.todos.firstIndex(where: { $0.id == id }) else { return }
+        data.todos[i].done.toggle()
+        save()
+    }
+
+    func deleteTodo(_ id: String) {
+        data.todos.removeAll { $0.id == id }
         save()
     }
 
@@ -600,7 +722,7 @@ final class CalendarStore: ObservableObject {
                                 exportedAt: ISO8601DateFormatter().string(from: Date()),
                                 theme: themeKey.rawValue,
                                 persons: data.persons, entries: data.entries,
-                                settings: data.settings)
+                                settings: data.settings, todos: data.todos)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let raw = try encoder.encode(backup)
@@ -615,7 +737,7 @@ final class CalendarStore: ObservableObject {
     func importBackup(_ backup: BackupFile, replace: Bool) {
         if replace {
             data = CalendarData(persons: backup.persons, entries: backup.entries,
-                                settings: backup.settings ?? AppSettings())
+                                settings: backup.settings ?? AppSettings(), todos: backup.todos ?? [])
             if let t = backup.theme, let key = AppThemeKey(rawValue: t) { themeKey = key }
             calendarPersonID = data.persons.first?.id
         } else {
@@ -623,6 +745,8 @@ final class CalendarStore: ObservableObject {
             let entryIDs = Set(data.entries.map { $0.id })
             data.persons.append(contentsOf: backup.persons.filter { !personIDs.contains($0.id) })
             data.entries.append(contentsOf: backup.entries.filter { !entryIDs.contains($0.id) })
+            let todoIDs = Set(data.todos.map { $0.id })
+            data.todos.append(contentsOf: (backup.todos ?? []).filter { !todoIDs.contains($0.id) })
         }
         save()
     }
@@ -774,7 +898,7 @@ struct CardStyle: ViewModifier {
             .background(store.theme.card, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.55), lineWidth: 1)
+                    .stroke(store.theme.deep.opacity(0.16), lineWidth: 1)
             )
             .shadow(color: store.theme.deep.opacity(0.10), radius: 12, x: 0, y: 5)
     }
@@ -812,6 +936,7 @@ struct HomeView: View {
     @EnvironmentObject var store: CalendarStore
     let goCalendar: () -> Void
     @State private var showAdd = false
+    @State private var editTarget: Person?
     @State private var deleteTarget: Person?
     @State private var mutualTarget: Person?
 
@@ -832,7 +957,7 @@ struct HomeView: View {
                     Button {
                         showAdd = true
                     } label: {
-                        Text("＋ 新しい片思いを追加する")
+                        Text("＋ 新しく追加")
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(store.theme.deep)
                             .frame(maxWidth: .infinity)
@@ -850,7 +975,11 @@ struct HomeView: View {
             }
             .background(store.theme.cream.ignoresSafeArea())
             .sheet(isPresented: $showAdd) {
-                AddPersonView()
+                PersonEditView(existing: nil)
+                    .environmentObject(store)
+            }
+            .sheet(item: $editTarget) { person in
+                PersonEditView(existing: person)
                     .environmentObject(store)
             }
             .confirmationDialog(
@@ -890,6 +1019,16 @@ struct HomeView: View {
             HStack(alignment: .top) {
                 PersonAvatar(person: person, size: 60)
                 Spacer()
+                Button {
+                    editTarget = person
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(store.theme.muted)
+                        .padding(4)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("編集")
                 Button {
                     deleteTarget = person
                 } label: {
@@ -954,6 +1093,22 @@ struct HomeView: View {
             }
             .padding(.top, 10)
 
+            if !person.fields.isEmpty {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(person.fields.filter { !$0.label.isEmpty }) { field in
+                        HStack(spacing: 6) {
+                            Text(field.label)
+                                .font(.system(.caption, design: .rounded).weight(.bold))
+                                .foregroundStyle(store.theme.sub)
+                            Text(field.value)
+                                .font(.system(.caption, design: .rounded))
+                                .foregroundStyle(store.theme.text)
+                        }
+                    }
+                }
+                .padding(.top, 10)
+            }
+
             Button {
                 store.calendarPersonID = person.id
                 store.pendingDay = DateKit.todayString()
@@ -994,23 +1149,47 @@ struct HomeView: View {
     }
 
 }
-// MARK: - Add person
+// MARK: - Person editor (add + edit)
 
-struct AddPersonView: View {
+struct PersonEditView: View {
     @EnvironmentObject var store: CalendarStore
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name = ""
-    @State private var since = Date()
-    @State private var hasMet = false
-    @State private var met = Date()
-    @State private var hasBirthday = false
-    @State private var birthday = Date()
-    @State private var rel = "片思い"
-    @State private var color = CalendarStore.personColors[0]
+    let existing: Person?
+
+    @State private var name: String
+    @State private var since: Date
+    @State private var hasMet: Bool
+    @State private var met: Date
+    @State private var hasBirthday: Bool
+    @State private var birthday: Date
+    @State private var rel: String
+    @State private var color: String
+    @State private var song: String
+    @State private var fields: [CustomField]
     @State private var iconItem: PhotosPickerItem?
+    @State private var showIconPicker = false
     @State private var iconDataURL: String?
     @State private var alertText: String?
+
+    init(existing: Person?) {
+        self.existing = existing
+        _name = State(initialValue: existing?.name ?? "")
+        _since = State(initialValue: DateKit.date(from: existing?.since ?? "") ?? Date())
+        _hasMet = State(initialValue: existing?.met != nil)
+        _met = State(initialValue: DateKit.date(from: existing?.met ?? "") ?? Date())
+        _hasBirthday = State(initialValue: existing?.birthday != nil)
+        _birthday = State(initialValue: DateKit.date(from: existing?.birthday ?? "") ?? Date())
+        _rel = State(initialValue: existing?.rel ?? "片思い")
+        _color = State(initialValue: existing?.color ?? CalendarStore.personColors[0])
+        _song = State(initialValue: existing?.song ?? "")
+        _fields = State(initialValue: existing?.fields ?? [])
+        _iconDataURL = State(initialValue: existing?.icon)
+    }
+
+    private var colorBinding: Binding<Color> {
+        Binding(get: { Color(hex: color) }, set: { color = $0.hexString })
+    }
 
     var body: some View {
         NavigationStack {
@@ -1055,6 +1234,30 @@ struct AddPersonView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    ColorPicker("パレットから選ぶ", selection: colorBinding, supportsOpacity: false)
+                }
+                Section("カスタム項目") {
+                    ForEach($fields) { $field in
+                        HStack(spacing: 8) {
+                            TextField("項目名（例：好きな色）", text: $field.label)
+                                .frame(maxWidth: 130)
+                            TextField("内容（例：青）", text: $field.value)
+                            Button(role: .destructive) {
+                                fields.removeAll { $0.id == $field.wrappedValue.id }
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    Button("＋ 項目を追加") {
+                        fields.append(CustomField(id: UUID().uuidString, label: "", value: ""))
+                    }
+                }
+                Section("曲（任意）") {
+                    TextField("Spotifyの曲・プレイリストのURL", text: $song)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
                 }
                 Section("アイコン（任意）") {
                     HStack(spacing: 12) {
@@ -1064,9 +1267,12 @@ struct AddPersonView: View {
                                 .frame(width: 44, height: 44)
                                 .clipShape(Circle())
                         }
-                        PhotosPicker(selection: $iconItem, matching: .images) {
+                        Button {
+                            showIconPicker = true
+                        } label: {
                             Text(iconDataURL == nil ? "写真を選ぶ" : "写真を変更")
                         }
+                        .buttonStyle(.plain)
                         if iconDataURL != nil {
                             Button("外す", role: .destructive) { iconDataURL = nil; iconItem = nil }
                         }
@@ -1074,14 +1280,14 @@ struct AddPersonView: View {
                 }
             }
             .fontDesign(.rounded)
-            .navigationTitle("新しい片思いを追加")
+            .navigationTitle(existing == nil ? "新しく追加" : "編集")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("キャンセル") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("追加する") { save() }
+                    Button(existing == nil ? "追加する" : "保存する") { save() }
                         .fontWeight(.bold)
                 }
             }
@@ -1092,6 +1298,7 @@ struct AddPersonView: View {
             } message: {
                 Text(alertText ?? "")
             }
+            .photosPicker(isPresented: $showIconPicker, selection: $iconItem, matching: .images)
             .onChange(of: iconItem) { _, newItem in
                 Task { @MainActor in
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -1106,10 +1313,34 @@ struct AddPersonView: View {
     private func save() {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { alertText = "呼び名を入力してね"; return }
-        store.addPerson(name: trimmed,
-                        since: DateKit.string(from: since),
-                        met: hasMet ? DateKit.string(from: met) : nil,
-                        color: color, rel: rel, birthday: hasBirthday ? DateKit.string(from: birthday) : nil, icon: iconDataURL)
+        let cleanedFields = fields
+            .map { CustomField(id: $0.id,
+                                label: $0.label.trimmingCharacters(in: .whitespaces),
+                                value: $0.value.trimmingCharacters(in: .whitespaces)) }
+            .filter { !$0.label.isEmpty }
+        let songValue = song.trimmingCharacters(in: .whitespaces)
+        if let existing {
+            store.updatePerson(existing.id) { p in
+                p.name = trimmed
+                p.since = DateKit.string(from: since)
+                p.met = hasMet ? DateKit.string(from: met) : nil
+                p.birthday = hasBirthday ? DateKit.string(from: birthday) : nil
+                p.rel = rel
+                p.color = color
+                p.song = songValue.isEmpty ? nil : songValue
+                p.icon = iconDataURL
+                p.fields = cleanedFields
+            }
+        } else {
+            store.addPerson(name: trimmed,
+                            since: DateKit.string(from: since),
+                            met: hasMet ? DateKit.string(from: met) : nil,
+                            color: color, rel: rel,
+                            birthday: hasBirthday ? DateKit.string(from: birthday) : nil,
+                            icon: iconDataURL,
+                            song: songValue.isEmpty ? nil : songValue,
+                            fields: cleanedFields)
+        }
         dismiss()
     }
 }
@@ -1486,6 +1717,7 @@ struct DaySheet: View {
     @State private var like: Double = 70
     @State private var text = ""
     @State private var photoItem: PhotosPickerItem?
+    @State private var showPhotoPicker = false
     @State private var photoDataURL: String?
 
     private let moods = ["ときめき", "普通", "切ない", "つらい"]
@@ -1602,9 +1834,12 @@ struct DaySheet: View {
                         }
 
                     HStack(spacing: 12) {
-                        PhotosPicker(selection: $photoItem, matching: .images) {
+                        Button {
+                            showPhotoPicker = true
+                        } label: {
                             Label("写真を選ぶ", systemImage: "photo")
                         }
+                        .buttonStyle(.plain)
                         if photoDataURL != nil {
                             Button("写真を外す", role: .destructive) {
                                 photoDataURL = nil
@@ -1638,6 +1873,7 @@ struct DaySheet: View {
                     .fontWeight(.bold)
                 }
             }
+            .photosPicker(isPresented: $showPhotoPicker, selection: $photoItem, matching: .images)
             .onChange(of: photoItem) { _, newItem in
                 Task { @MainActor in
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -1825,10 +2061,11 @@ struct DashView: View {
     @EnvironmentObject var store: CalendarStore
     let goSettings: () -> Void
     @StateObject private var weather = WeatherModel()
+    @State private var laActive = false
 
     private var widgets: [String] { store.data.settings.widgets }
     private var missing: [String] {
-        ["weather", "music"].filter { !widgets.contains($0) }
+        ["weather", "music", "todo"].filter { !widgets.contains($0) }
     }
 
     var body: some View {
@@ -1841,13 +2078,14 @@ struct DashView: View {
                     ForEach(widgets, id: \.self) { widget in
                         widgetCard(widget)
                     }
+                    liveActivityCard
                     if !missing.isEmpty {
                         HStack(spacing: 8) {
                             ForEach(missing, id: \.self) { widget in
                                 Button {
                                     store.updateSettings { $0.widgets.append(widget) }
                                 } label: {
-                                    Text("＋ \(widget == "weather" ? "天気" : "ミュージック")")
+                                    Text("＋ \(widgetLabel(widget))")
                                 }
                                 .buttonStyle(.glass)
                             }
@@ -1865,10 +2103,78 @@ struct DashView: View {
         }
     }
 
+    private func widgetLabel(_ widget: String) -> String {
+        widget == "weather" ? "天気" : widget == "music" ? "ミュージック" : "ToDo"
+    }
+
+    private var liveActivityCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("ライブアクティビティ")
+                .font(.system(.caption, design: .rounded).weight(.bold))
+                .foregroundStyle(store.theme.muted)
+            if let person = store.data.persons.first {
+                HStack(spacing: 10) {
+                    PersonAvatar(person: person, size: 36)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("\(person.name)さん")
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .foregroundStyle(store.theme.text)
+                        Text("好きになって \(DateKit.daysSince(person.since)) 日目")
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundStyle(store.theme.muted)
+                    }
+                    Spacer()
+                    if laActive {
+                        Button("停止") { stopLiveActivity() }
+                            .buttonStyle(.glass)
+                    } else {
+                        Button("開始") { startLiveActivity() }
+                            .buttonStyle(.glass)
+                    }
+                }
+                Text("ロック画面とDynamic Islandに日数を表示します。仕様で最大8時間で自動終了します。")
+                    .font(.system(.caption2, design: .rounded))
+                    .foregroundStyle(store.theme.muted)
+            } else {
+                Text("人を登録すると使えます。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+            }
+        }
+        .padding(16)
+        .cardStyle()
+        .onAppear { laActive = !Activity<DaysActivityAttributes>.activities.isEmpty }
+    }
+
+    private func startLiveActivity() {
+        guard let person = store.data.persons.first else { return }
+        let days = DateKit.daysSince(person.since)
+        let attributes = DaysActivityAttributes(personName: person.name, colorHex: person.color)
+        let content = ActivityContent(
+            state: DaysActivityAttributes.ContentState(days: days, milestoneText: CalendarStore.nextMilestoneText(days)),
+            staleDate: Calendar.current.startOfDay(for: Date()).addingTimeInterval(24 * 3600)
+        )
+        do {
+            _ = try Activity.request(attributes: attributes, content: content)
+            laActive = true
+        } catch {
+            laActive = false
+        }
+    }
+
+    private func stopLiveActivity() {
+        Task {
+            for activity in Activity<DaysActivityAttributes>.activities {
+                await activity.end(nil, dismissalPolicy: .immediate)
+            }
+            laActive = false
+        }
+    }
+
     private func widgetCard(_ widget: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(widget == "weather" ? "天気" : "ミュージック")
+                Text(widgetLabel(widget))
                     .font(.system(.caption, design: .rounded).weight(.bold))
                     .foregroundStyle(store.theme.muted)
                 Spacer()
@@ -1883,12 +2189,67 @@ struct DashView: View {
             }
             if widget == "weather" {
                 WeatherWidget(model: weather)
+            } else if widget == "todo" {
+                TodoCard()
             } else {
                 MusicWidget(goSettings: goSettings)
             }
         }
         .padding(16)
         .cardStyle()
+    }
+}
+
+struct TodoCard: View {
+    @EnvironmentObject var store: CalendarStore
+    @State private var newText = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if store.data.todos.isEmpty {
+                Text("ToDoはまだありません。下から追加できます。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+            }
+            ForEach(store.data.todos) { todo in
+                HStack(spacing: 10) {
+                    Button {
+                        store.toggleTodo(todo.id)
+                    } label: {
+                        Image(systemName: todo.done ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 19))
+                            .foregroundStyle(todo.done ? store.theme.rose : store.theme.muted)
+                    }
+                    .buttonStyle(.plain)
+                    Text(todo.text)
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(todo.done ? store.theme.muted : store.theme.text)
+                        .strikethrough(todo.done)
+                    Spacer()
+                    Button {
+                        store.deleteTodo(todo.id)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(store.theme.muted)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            HStack(spacing: 8) {
+                TextField("新しいToDo", text: $newText)
+                    .font(.system(.subheadline, design: .rounded))
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { add() }
+                Button("追加") { add() }
+                    .buttonStyle(.glass)
+            }
+        }
+    }
+
+    private func add() {
+        store.addTodo(newText)
+        newText = ""
     }
 }
 
@@ -2035,8 +2396,10 @@ struct WeatherWidget: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(alignment: .center, spacing: 12) {
                         Image(systemName: WeatherModel.symbols[r.current.weather_code] ?? "cloud.fill")
-                            .font(.system(size: 36))
+                            .font(.system(size: 30))
                             .symbolRenderingMode(.multicolor)
+                            .frame(width: 54, height: 54)
+                            .background(Circle().fill(Color(hex: "#d7e7f5")))
                         Text("\(Int(r.current.temperature_2m.rounded()))°")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .foregroundStyle(store.theme.deep)
@@ -2056,8 +2419,10 @@ struct WeatherWidget: View {
                                 .foregroundStyle(store.theme.sub)
                                 .frame(width: 34, alignment: .leading)
                             Image(systemName: WeatherModel.symbols[r.daily.weather_code[i]] ?? "cloud.fill")
-                                .font(.system(size: 15))
+                                .font(.system(size: 13))
                                 .symbolRenderingMode(.multicolor)
+                                .frame(width: 26, height: 26)
+                                .background(Circle().fill(Color(hex: "#d7e7f5")))
                             Text(WeatherModel.labels[r.daily.weather_code[i]] ?? "—")
                                 .font(.system(.subheadline, design: .rounded))
                                 .foregroundStyle(store.theme.text)
@@ -2159,6 +2524,7 @@ final class AuthPresenter: NSObject, ASWebAuthenticationPresentationContextProvi
 @MainActor
 final class SpotifyModel: ObservableObject {
     @Published var nowPlaying: SpotifyNowPlaying?
+    @Published var fetchedAt: Date?
     @Published var loaded = false
     @Published var authError: String?
 
@@ -2275,8 +2641,10 @@ final class SpotifyModel: ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: req)
             if let http = response as? HTTPURLResponse, http.statusCode == 200 {
                 nowPlaying = try JSONDecoder().decode(SpotifyNowPlaying.self, from: data)
+                fetchedAt = Date()
             } else {
                 nowPlaying = nil
+                fetchedAt = nil
             }
         } catch {
             authError = error.localizedDescription
@@ -2338,9 +2706,20 @@ struct MusicWidget: View {
             spotify.clientID = store.data.settings.spId
             while !Task.isCancelled {
                 await spotify.refresh()
-                try? await Task.sleep(for: .seconds(15))
+                try? await Task.sleep(for: .seconds(5))
             }
         }
+    }
+
+    private func liveProgress(_ np: SpotifyNowPlaying, at now: Date) -> Double {
+        let base = Double(np.progress_ms ?? 0)
+        guard np.is_playing, let fetchedAt = spotify.fetchedAt else { return base }
+        return min(base + now.timeIntervalSince(fetchedAt) * 1000, Double(np.item?.duration_ms ?? 0))
+    }
+
+    private func timeText(_ ms: Int) -> String {
+        let sec = max(0, ms / 1000)
+        return "\(sec / 60):\(String(format: "%02d", sec % 60))"
     }
 
     private var nowPlayingSection: some View {
@@ -2395,9 +2774,21 @@ struct MusicWidget: View {
                     }
                     Spacer()
                 }
-                if let progress = np.progress_ms, item.duration_ms > 0 {
-                    ProgressView(value: Double(progress), total: Double(item.duration_ms))
-                        .tint(store.theme.rose)
+                if np.progress_ms != nil, item.duration_ms > 0 {
+                    TimelineView(.periodic(from: .now, by: 0.5)) { context in
+                        let current = liveProgress(np, at: context.date)
+                        VStack(spacing: 3) {
+                            ProgressView(value: current, total: Double(item.duration_ms))
+                                .tint(store.theme.rose)
+                            HStack {
+                                Text(timeText(Int(current)))
+                                Spacer()
+                                Text(timeText(item.duration_ms))
+                            }
+                            .font(.system(.caption2, design: .rounded))
+                            .foregroundStyle(store.theme.muted)
+                        }
+                    }
                 }
             } else if spotify.loaded {
                 HStack(spacing: 10) {
@@ -2455,6 +2846,11 @@ struct SettingsView: View {
             .fontDesign(.rounded)
             .scrollContentBackground(.hidden)
             .background(store.theme.cream.ignoresSafeArea())
+            .listRowBackground(
+                store.themeKey == .white || store.themeKey == .custom
+                    ? AnyView(store.theme.petal)
+                    : AnyView(store.theme.card)
+            )
             .toolbar(.hidden, for: .navigationBar)
             .alert("お知らせ", isPresented: Binding(
                 get: { alertText != nil }, set: { if !$0 { alertText = nil } }
@@ -2494,7 +2890,7 @@ struct SettingsView: View {
         Section("テーマカラー") {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 ForEach(AppThemeKey.allCases) { key in
-                    let t = AppTheme.of(key)
+                    let t = store.theme(for: key)
                     Button {
                         store.setTheme(key)
                     } label: {
@@ -2515,6 +2911,12 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            }
+            if store.themeKey == .custom {
+                ColorPicker("好きな色を選ぶ", selection: Binding(
+                    get: { Color(hex: store.customColorHex) },
+                    set: { store.setCustomColor($0.hexString) }
+                ), supportsOpacity: false)
             }
         }
     }
@@ -2645,6 +3047,7 @@ struct SettingsView: View {
         Section("ダッシュボード") {
             Toggle("天気ウィジェット", isOn: widgetBinding("weather"))
             Toggle("ミュージックウィジェット", isOn: widgetBinding("music"))
+            Toggle("ToDoウィジェット", isOn: widgetBinding("todo"))
         }
     }
 
@@ -2721,8 +3124,10 @@ struct PersonSettingsRow: View {
     let personID: String
 
     @State private var iconItem: PhotosPickerItem?
+    @State private var showIconPicker = false
     @State private var songDraft: String?
     @State private var showMutualConfirm = false
+    @State private var showEdit = false
 
     private var person: Person? { store.person(personID) }
 
@@ -2752,14 +3157,43 @@ struct PersonSettingsRow: View {
                         .labelsHidden()
                     }
 
+                    HStack(spacing: 6) {
+                        Text("カラー")
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundStyle(store.theme.sub)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(CalendarStore.personColors, id: \.self) { c in
+                                    Button {
+                                        store.updatePerson(person.id) { $0.color = c }
+                                    } label: {
+                                        Circle()
+                                            .fill(Color(hex: c))
+                                            .frame(width: 22, height: 22)
+                                            .overlay(Circle().strokeBorder(Color.primary.opacity(person.color == c ? 0.6 : 0), lineWidth: 2))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                ColorPicker("", selection: Binding(
+                                    get: { Color(hex: person.color) },
+                                    set: { newColor in store.updatePerson(person.id) { $0.color = newColor.hexString } }
+                                ), supportsOpacity: false)
+                                .labelsHidden()
+                            }
+                        }
+                    }
+
                     HStack(spacing: 8) {
-                        PhotosPicker(selection: $iconItem, matching: .images) {
+                        Button {
+                            showIconPicker = true
+                        } label: {
                             Text("アイコンを選ぶ")
                                 .font(.system(.caption, design: .rounded).weight(.semibold))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(store.theme.petal, in: Capsule())
                         }
+                        .buttonStyle(.plain)
                         if person.icon != nil {
                             Button("アイコンを外す") {
                                 store.updatePerson(person.id) { $0.icon = nil }
@@ -2767,6 +3201,9 @@ struct PersonSettingsRow: View {
                             .font(.system(.caption, design: .rounded).weight(.semibold))
                             .buttonStyle(.glass)
                         }
+                        Button("編集") { showEdit = true }
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .buttonStyle(.glass)
                         if (person.rel ?? "片思い") == "片思い" {
                             Button("両思いになった") { showMutualConfirm = true }
                                 .font(.system(.caption, design: .rounded).weight(.bold))
@@ -2813,6 +3250,7 @@ struct PersonSettingsRow: View {
                 }
                 .padding(.vertical, 4)
                 .onAppear { if songDraft == nil { songDraft = person.song ?? "" } }
+                .photosPicker(isPresented: $showIconPicker, selection: $iconItem, matching: .images)
                 .onChange(of: iconItem) { _, newItem in
                     Task { @MainActor in
                         if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -2821,6 +3259,10 @@ struct PersonSettingsRow: View {
                             store.updatePerson(person.id) { $0.icon = url }
                         }
                     }
+                }
+                .sheet(isPresented: $showEdit) {
+                    PersonEditView(existing: person)
+                        .environmentObject(store)
                 }
                 .confirmationDialog(
                     "両思いになりましたか？",

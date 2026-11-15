@@ -134,7 +134,7 @@ struct DaysWidgetView: View {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 11))
                     .foregroundStyle(colorFromHex(person.color))
-                Text("\(person.name)さん")
+                Text(person.name)
                     .font(.system(.caption, design: .rounded).weight(.bold))
                     .lineLimit(1)
             }
@@ -192,7 +192,7 @@ struct DaysWidgetView: View {
                     Image(systemName: "heart.fill")
                         .font(.system(size: 13))
                         .foregroundStyle(colorFromHex(p.color))
-                    Text("\(p.name)さん")
+                    Text(p.name)
                         .font(.system(.subheadline, design: .rounded).weight(.bold))
                         .lineLimit(1)
                     Spacer()
@@ -242,7 +242,7 @@ struct DaysWidgetView: View {
     private var accessoryRectangular: some View {
         VStack(alignment: .leading, spacing: 1) {
             if let person {
-                Text("\(person.name)さん \(days)日間")
+                Text("\(person.name) \(days)日間")
                     .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .lineLimit(1)
                 Text(WidgetMilestones.nextText(days))
@@ -260,7 +260,7 @@ struct DaysWidgetView: View {
     private var accessoryInline: some View {
         Group {
             if let person {
-                Text("\(person.name)さん あと\(WidgetMilestones.nextText(days).components(separatedBy: "あと").last ?? "")")
+                Text("\(person.name) あと\(WidgetMilestones.nextText(days).components(separatedBy: "あと").last ?? "")")
             } else {
                 Text("恋ログ")
             }
@@ -278,11 +278,12 @@ struct DaysLiveActivity: Widget {
                     .font(.system(size: 26))
                     .foregroundStyle(colorFromHex(context.attributes.colorHex))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(context.attributes.personName)さん")
+                    Text(context.attributes.personName)
                         .font(.system(.headline, design: .rounded).weight(.bold))
+                        .foregroundStyle(Color.black)
                     Text(context.state.milestoneText)
                         .font(.system(.caption, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(white: 0.38))
                 }
                 Spacer()
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
@@ -291,11 +292,12 @@ struct DaysLiveActivity: Widget {
                         .foregroundStyle(colorFromHex(context.attributes.colorHex))
                     Text("日間")
                         .font(.system(.caption, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(white: 0.38))
                 }
             }
             .padding(16)
-            .activityBackgroundTint(Color(red: 1.0, green: 0.97, blue: 0.98))
+            .background(Color.white)
+            .activityBackgroundTint(Color.white)
             .activitySystemActionForegroundColor(Color.black)
         } dynamicIsland: { context in
             DynamicIsland {
@@ -310,7 +312,7 @@ struct DaysLiveActivity: Widget {
                         .foregroundStyle(colorFromHex(context.attributes.colorHex))
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text("\(context.attributes.personName)さん ・ \(context.state.milestoneText)")
+                    Text("\(context.attributes.personName) ・ \(context.state.milestoneText)")
                         .font(.system(.caption, design: .rounded))
                         .foregroundStyle(.secondary)
                 }

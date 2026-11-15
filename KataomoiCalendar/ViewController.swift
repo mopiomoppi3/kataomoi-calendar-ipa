@@ -255,12 +255,14 @@ struct AppSettings: Codable, Hashable {
     var dash: Bool = true
     var widgets: [String] = ["weather", "music"]
     var spId: String = ""
+    var aiKey: String = ""
     var tabNames: [String: String] = [:]
     var tabsShow: [String: Bool] = [:]
     var mileEvent: Bool = true
+    var mileStep: Int = 100
 
     private enum CodingKeys: String, CodingKey {
-        case icons, celebrate, style, dash, widgets, spId, tabNames, tabsShow, mileEvent
+        case icons, celebrate, style, dash, widgets, spId, tabNames, tabsShow, mileEvent, mileStep, aiKey
     }
 
     init() {}
@@ -273,9 +275,11 @@ struct AppSettings: Codable, Hashable {
         dash = try c.decodeIfPresent(Bool.self, forKey: .dash) ?? true
         widgets = try c.decodeIfPresent([String].self, forKey: .widgets) ?? ["weather", "music"]
         spId = try c.decodeIfPresent(String.self, forKey: .spId) ?? ""
+        aiKey = try c.decodeIfPresent(String.self, forKey: .aiKey) ?? ""
         tabNames = try c.decodeIfPresent([String: String].self, forKey: .tabNames) ?? [:]
         tabsShow = try c.decodeIfPresent([String: Bool].self, forKey: .tabsShow) ?? [:]
         mileEvent = try c.decodeIfPresent(Bool.self, forKey: .mileEvent) ?? true
+        mileStep = try c.decodeIfPresent(Int.self, forKey: .mileStep) ?? 100
     }
 }
 
@@ -500,7 +504,6 @@ final class CalendarStore: ObservableObject {
                                "#c0496d", "#7b5ea7", "#2d8a68", "#b06030", "#1860a0",
                                "#d6336c", "#e3a008", "#17809e", "#5b8c5a", "#8a5a2b", "#5a67d8"]
     static let relations = ["片思い", "気になる", "友達", "両思い", "恋人", "推し"]
-    static let milestones = [100, 200, 300, 365, 500, 730, 1000, 1095, 1500, 2000, 3000]
 
     var theme: AppTheme { theme(for: themeKey) }
 
@@ -558,11 +561,17 @@ final class CalendarStore: ObservableObject {
             persons: data.persons.map { .init(name: $0.name, since: $0.since, color: $0.color, rel: $0.rel ?? "片思い", birthday: $0.birthday) },
             todos: data.todos.map { .init(text: $0.text, done: $0.done) },
             phrases: data.phrases.map { $0.text },
-            updatedAt: DateKit.todayString()
+            updatedAt: DateKit.todayString(),
+            mileStep: data.settings.mileStep
         )
-        if let url = SharedStore.fileURL, let encoded = try? JSONEncoder().encode(snapshot) {
-            try? encoded.write(to: url, options: [.atomic])
+        var wrote = false
+        if let encoded = try? JSONEncoder().encode(snapshot) {
+            for url in SharedStore.allFileURLs {
+                if (try? encoded.write(to: url, options: [.atomic])) != nil { wrote = true }
+            }
         }
+        UserDefaults.standard.set(wrote ? "ok" : "ng", forKey: "kataomoi-widget-write")
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "kataomoi-widget-write-at")
         WidgetCenter.shared.reloadAllTimelines()
     }
 
@@ -685,21 +694,22 @@ final class CalendarStore: ObservableObject {
         return count
     }
 
-    static func reachedMilestone(_ days: Int) -> Int {
-        var best = milestones.filter { $0 <= days }.max() ?? 0
+    static func reachedMilestone(_ days: Int, step: Int) -> Int {
+        let s = step > 0 ? step : 100
+        let byStep = (days / s) * s
         let years = (days / 365) * 365
-        if years > best { best = years }
-        return best
+        return max(byStep, years)
     }
 
     static func milestoneLabel(_ m: Int) -> String {
         m % 365 == 0 && m > 0 ? "\(m / 365)年" : "\(m)日"
     }
 
-    static func nextMilestoneText(_ days: Int) -> String {
-        var next = milestones.first(where: { $0 > days })
-        if next == nil { next = (days / 365 + 1) * 365 }
-        guard let n = next else { return "" }
+    static func nextMilestoneText(_ days: Int, step: Int) -> String {
+        let s = step > 0 ? step : 100
+        let byStep = (days / s + 1) * s
+        let byYear = (days / 365 + 1) * 365
+        let n = min(byStep, byYear)
         return "\(milestoneLabel(n))まであと\(n - days)日"
     }
 
@@ -707,7 +717,7 @@ final class CalendarStore: ObservableObject {
         var events: [String] = []
         var changed = false
         for i in data.persons.indices {
-            let reached = Self.reachedMilestone(DateKit.daysSince(data.persons[i].since))
+            let reached = Self.reachedMilestone(DateKit.daysSince(data.persons[i].since), step: data.settings.mileStep)
             if data.persons[i].mileDone == nil {
                 data.persons[i].mileDone = reached
                 changed = true
@@ -822,7 +832,8 @@ struct ContentView: View {
         TabDef(key: "home", title: "ホーム", icon: "house.fill"),
         TabDef(key: "cal", title: "カレンダー", icon: "calendar"),
         TabDef(key: "stats", title: "統計", icon: "chart.bar.xaxis"),
-        TabDef(key: "dash", title: "ウィジェット", icon: "square.grid.2x2.fill")
+        TabDef(key: "dash", title: "ウィジェット", icon: "square.grid.2x2.fill"),
+        TabDef(key: "advice", title: "相談", icon: "bubble.left.and.bubble.right.fill")
     ]
 
     func tabShown(_ key: String) -> Bool {
@@ -857,6 +868,11 @@ struct ContentView: View {
                     DashView(goSettings: { selectedTab = "settings" })
                         .tabItem { Label(tabTitle(Self.tabDefs[3]), systemImage: Self.tabDefs[3].icon) }
                         .tag("dash")
+                }
+                if tabShown("advice") {
+                    AdviceView()
+                        .tabItem { Label(tabTitle(Self.tabDefs[4]), systemImage: Self.tabDefs[4].icon) }
+                        .tag("advice")
                 }
                 SettingsView(selectedTab: $selectedTab)
                     .tabItem { Label("設定", systemImage: "gearshape.fill") }
@@ -1119,7 +1135,7 @@ struct HomeView: View {
                 .padding(.top, 2)
 
             HStack(spacing: 8) {
-                Text(CalendarStore.nextMilestoneText(days))
+                Text(CalendarStore.nextMilestoneText(days, step: store.data.settings.mileStep))
                     .font(.system(.caption, design: .rounded).weight(.medium))
                     .foregroundStyle(store.theme.sub)
                     .padding(.horizontal, 12)
@@ -1399,6 +1415,7 @@ struct CalendarView: View {
     @EnvironmentObject var store: CalendarStore
     @State private var selectedPersonID: String?
     @State private var monthDate = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
+    @State private var selectedDate = DateKit.todayString()
     @State private var dayRequest: DayRequest?
 
     private var person: Person? {
@@ -1407,24 +1424,33 @@ struct CalendarView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 14) {
-                    if store.data.persons.isEmpty {
-                        EmptyState(message: "先に片思い中の人を追加してね")
-                    } else {
-                        personPicker
-                        if let person, let songURL = spotifyEmbedURL(person.song) {
-                            SpotifySongCard(url: songURL)
+            VStack(spacing: 0) {
+                if store.data.persons.isEmpty {
+                    EmptyState(message: "先に片思い中の人を追加してね")
+                        .padding(.top, 40)
+                } else {
+                    VStack(spacing: 10) {
+                        if store.data.persons.count > 1 {
+                            personPicker
                         }
                         monthHeader
                         calendarGrid
-                        legend
-                        monthSummary
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+
+                    ScrollView {
+                        VStack(spacing: 14) {
+                            dayPanel
+                            if let person, let songURL = spotifyEmbedURL(person.song) {
+                                SpotifySongCard(url: songURL)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 14)
+                        .padding(.bottom, 28)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 28)
             }
             .background(store.theme.cream.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
@@ -1448,6 +1474,10 @@ struct CalendarView: View {
     private func consumePendingDay() {
         if let day = store.pendingDay {
             if let p = person { selectedPersonID = p.id }
+            if let d = DateKit.date(from: day) {
+                monthDate = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: d)) ?? monthDate
+            }
+            selectedDate = day
             dayRequest = DayRequest(date: day)
             store.pendingDay = nil
         }
@@ -1484,46 +1514,61 @@ struct CalendarView: View {
 
     private var monthHeader: some View {
         let comps = Calendar.current.dateComponents([.year, .month], from: monthDate)
-        return HStack(spacing: 10) {
-            Button {
-                shiftMonth(-1)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .bold))
-                    .frame(width: 34, height: 34)
-            }
-            .buttonStyle(.glass)
-            .accessibilityLabel("前月")
-
-            Text("\(comps.year ?? 0)年 \(comps.month ?? 1)月")
-                .font(.system(.headline, design: .rounded).weight(.bold))
-                .foregroundStyle(store.theme.text)
-                .frame(maxWidth: .infinity)
-
-            Button("今日") { goToday() }
+        return VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 8) {
+                Text("\(comps.year ?? 0)年")
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .foregroundStyle(store.theme.sub)
+                Spacer()
+                Button {
+                    shiftMonth(-1)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 13, weight: .bold))
+                        .frame(width: 32, height: 32)
+                }
                 .buttonStyle(.glass)
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
-
-            Button {
-                shiftMonth(1)
-            } label: {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .bold))
-                    .frame(width: 34, height: 34)
+                .accessibilityLabel("前月")
+                Button("今日") { goToday() }
+                    .buttonStyle(.glass)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                Button {
+                    shiftMonth(1)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .frame(width: 32, height: 32)
+                }
+                .buttonStyle(.glass)
+                .accessibilityLabel("次月")
             }
-            .buttonStyle(.glass)
-            .accessibilityLabel("次月")
+            Text("\(comps.month ?? 1)月")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundStyle(store.theme.text)
         }
     }
 
     private func shiftMonth(_ delta: Int) {
         if let next = Calendar.current.date(byAdding: .month, value: delta, to: monthDate) {
             monthDate = next
+            selectDefaultDay()
         }
     }
 
     private func goToday() {
         monthDate = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
+        selectedDate = DateKit.todayString()
+    }
+
+    private func selectDefaultDay() {
+        let comps = Calendar.current.dateComponents([.year, .month], from: monthDate)
+        let prefix = String(format: "%04d-%02d", comps.year ?? 0, comps.month ?? 0)
+        let today = DateKit.todayString()
+        if today.hasPrefix(prefix) {
+            selectedDate = today
+        } else {
+            selectedDate = DateKit.key(year: comps.year ?? 2026, month: comps.month ?? 1, day: 1)
+        }
     }
 
     private var calendarGrid: some View {
@@ -1536,8 +1581,8 @@ struct CalendarView: View {
         let dayCount = cal.range(of: .day, in: .month, for: first)?.count ?? 30
         let today = DateKit.todayString()
 
-        return VStack(spacing: 6) {
-            HStack(spacing: 6) {
+        return VStack(spacing: 4) {
+            HStack(spacing: 2) {
                 ForEach(Array(["日", "月", "火", "水", "木", "金", "土"].enumerated()), id: \.offset) { i, d in
                     Text(d)
                         .font(.system(.caption2, design: .rounded).weight(.bold))
@@ -1546,9 +1591,9 @@ struct CalendarView: View {
                 }
             }
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7), spacing: 6) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
                 ForEach(0..<blanks, id: \.self) { _ in
-                    Color.clear.frame(height: 62)
+                    Color.clear.frame(height: 52)
                 }
                 ForEach(1...dayCount, id: \.self) { day in
                     dayCell(year: year, month: month, day: day, today: today)
@@ -1562,136 +1607,92 @@ struct CalendarView: View {
     private func dayCell(year: Int, month: Int, day: Int, today: String) -> some View {
         let ds = DateKit.key(year: year, month: month, day: day)
         let entries = person.map { store.entries(for: $0.id, on: ds) } ?? []
-        let last = entries.last
         let isToday = ds == today
+        let isSelected = ds == selectedDate
+        let isSpecial = person.map { p in
+            p.since == ds || p.met == ds || p.mutual == ds ||
+            (p.birthday.map { String($0.dropFirst(5)) == String(ds.dropFirst(5)) } ?? false)
+        } ?? false
         return Button {
-            dayRequest = DayRequest(date: ds)
+            selectedDate = ds
         } label: {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 3) {
+            VStack(spacing: 3) {
+                ZStack {
+                    if isToday {
+                        Circle().fill(store.theme.rose).frame(width: 30, height: 30)
+                    } else if isSelected {
+                        Circle().fill(store.theme.petal).frame(width: 30, height: 30)
+                    }
                     Text("\(day)")
-                        .font(.system(.caption, design: .rounded).weight(isToday ? .bold : .medium))
-                        .foregroundStyle(isToday ? store.theme.rose : store.theme.text)
-                    if let person {
-                        if person.met == ds {
-                            mark("会", color: Color(hex: person.color))
-                        } else if person.since == ds {
-                            mark("好", color: store.theme.blush)
-                        }
-                        if person.mutual == ds {
-                            mark("両", color: Color(hex: "#e8698a"))
-                        }
-                        if let b = person.birthday, String(b.dropFirst(5)) == String(ds.dropFirst(5)) {
-                            mark("誕", color: Color(hex: "#e8698a"))
-                        }
-                    }
-                    Spacer()
+                        .font(.system(size: 16, weight: isToday || isSelected ? .bold : .medium, design: .rounded))
+                        .foregroundStyle(isToday ? Color.white : store.theme.text)
                 }
-                if let photo = last?.photo, let image = ImageData.uiImage(from: photo) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 30)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                } else if let last {
-                    if !last.mood.isEmpty {
-                        Text(last.mood)
-                            .font(.system(.caption2, design: .rounded))
-                            .foregroundStyle(store.theme.sub)
-                            .lineLimit(1)
+                .frame(height: 30)
+                HStack(spacing: 3) {
+                    if !entries.isEmpty {
+                        Circle().fill(Color(hex: person?.color ?? "#e8698a")).frame(width: 5, height: 5)
                     }
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(store.theme.petal)
-                            Capsule()
-                                .fill(store.theme.rose)
-                                .frame(width: geo.size.width * CGFloat(min(max(last.like, 0), 100)) / 100)
-                        }
+                    if isSpecial {
+                        Circle().fill(store.theme.rose).frame(width: 5, height: 5)
                     }
-                    .frame(height: 3)
                 }
-                Spacer(minLength: 0)
+                .frame(height: 5)
             }
-            .padding(5)
-            .frame(height: 62)
             .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isToday ? store.theme.petal : Color.clear)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(isToday ? store.theme.rose : Color.clear, lineWidth: 1.4)
-            )
+            .frame(height: 52)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
-    private func mark(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.system(size: 8, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .frame(width: 13, height: 13)
-            .background(color, in: Circle())
+    // Selected day panel (below the grid)
+
+    private var selectedEntries: [Entry] {
+        person.map { store.entries(for: $0.id, on: selectedDate) } ?? []
     }
 
-    private var legend: some View {
-        HStack(spacing: 14) {
-            legendItem(color: store.theme.rose, text: "記録あり")
-            if let person {
-                legendItem(color: store.theme.blush, text: "好きになった日")
-                if person.met != nil {
-                    legendItem(color: Color(hex: person.color), text: "出会った日")
-                }
-            }
-            Spacer()
-        }
-        .font(.system(.caption2, design: .rounded))
-        .foregroundStyle(store.theme.muted)
-        .padding(.horizontal, 4)
+    private var panelTitle: String {
+        guard let d = DateKit.date(from: selectedDate) else { return selectedDate }
+        let cal = Calendar.current
+        let m = cal.component(.month, from: d)
+        let day = cal.component(.day, from: d)
+        let wd = ["日", "月", "火", "水", "木", "金", "土"][cal.component(.weekday, from: d) - 1]
+        if selectedDate == DateKit.todayString() { return "\(m)月\(day)日（\(wd)）・今日" }
+        return "\(m)月\(day)日（\(wd)）"
     }
 
-    private func legendItem(color: Color, text: String) -> some View {
-        HStack(spacing: 5) {
-            Circle().fill(color).frame(width: 6, height: 6)
-            Text(text)
-        }
-    }
-
-    private var monthSummary: some View {
-        let comps = Calendar.current.dateComponents([.year, .month], from: monthDate)
-        let prefix = String(format: "%04d-%02d", comps.year ?? 0, comps.month ?? 0)
-        let monthEntries = person.map { p in store.data.entries.filter { $0.personId == p.id && $0.date.hasPrefix(prefix) } } ?? []
-        let recordedDays = Set(monthEntries.map { $0.date }).count
-        let photos = monthEntries.filter { $0.photo != nil }
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                summaryStat(value: "\(recordedDays)", label: "記録した日")
-                Divider().frame(height: 30)
-                summaryStat(value: "\(monthEntries.count)", label: "記録の数")
-                Divider().frame(height: 30)
-                summaryStat(value: "\(photos.count)", label: "写真")
-            }
-            if !photos.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(photos) { entry in
-                            if let image = ImageData.uiImage(from: entry.photo) {
-                                Button {
-                                    dayRequest = DayRequest(date: entry.date)
-                                } label: {
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 84, height: 84)
-                                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
+    private var dayPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 8) {
+                Text(panelTitle)
+                    .font(.system(.headline, design: .rounded).weight(.bold))
+                    .foregroundStyle(store.theme.text)
+                Spacer()
+                Button {
+                    dayRequest = DayRequest(date: selectedDate)
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 12, weight: .bold))
+                        Text("編集")
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     }
+                }
+                .buttonStyle(.glass)
+            }
+
+            if let person {
+                specialRows(person)
+            }
+
+            if selectedEntries.isEmpty {
+                Text("この日の記録はまだありません。編集ボタンから記録できます。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.muted)
+                    .padding(.vertical, 4)
+            } else {
+                ForEach(selectedEntries) { entry in
+                    entryRow(entry)
                 }
             }
         }
@@ -1699,16 +1700,82 @@ struct CalendarView: View {
         .cardStyle()
     }
 
-    private func summaryStat(value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.system(.title3, design: .rounded).weight(.bold))
-                .foregroundStyle(store.theme.deep)
-            Text(label)
-                .font(.system(.caption2, design: .rounded))
+    @ViewBuilder
+    private func specialRows(_ person: Person) -> some View {
+        let ds = selectedDate
+        VStack(spacing: 8) {
+            if let b = person.birthday, String(b.dropFirst(5)) == String(ds.dropFirst(5)) {
+                specialRow(icon: "gift.fill", color: Color(hex: "#e8698a"), text: "\(person.name)の誕生日")
+            }
+            if person.since == ds {
+                specialRow(icon: "heart.fill", color: store.theme.blush, text: "好きになった日")
+            }
+            if person.met == ds {
+                specialRow(icon: "sparkles", color: Color(hex: person.color), text: "出会った日")
+            }
+            if person.mutual == ds {
+                specialRow(icon: "heart.circle.fill", color: Color(hex: "#e8698a"), text: "両思いになった日")
+            }
+        }
+    }
+
+    private func specialRow(icon: String, color: Color, text: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 13))
+                .foregroundStyle(.white)
+                .frame(width: 26, height: 26)
+                .background(color, in: Circle())
+            Text(text)
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .foregroundStyle(store.theme.text)
+            Spacer()
+            Text("終日")
+                .font(.system(.caption, design: .rounded))
                 .foregroundStyle(store.theme.muted)
         }
-        .frame(maxWidth: .infinity)
+    }
+
+    private func entryRow(_ entry: Entry) -> some View {
+        Button {
+            dayRequest = DayRequest(date: selectedDate)
+        } label: {
+            HStack(alignment: .top, spacing: 10) {
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(Color(hex: person?.color ?? "#e8698a"))
+                    .frame(width: 4)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        if !entry.mood.isEmpty {
+                            Text(entry.mood)
+                                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                .foregroundStyle(store.theme.text)
+                        }
+                        Text("好き度 \(entry.like)")
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .foregroundStyle(store.theme.deep)
+                        Spacer()
+                    }
+                    if !entry.text.isEmpty {
+                        Text(entry.text)
+                            .font(.system(.subheadline, design: .rounded))
+                            .foregroundStyle(store.theme.sub)
+                            .multilineTextAlignment(.leading)
+                    }
+                    if let photo = entry.photo, let image = ImageData.uiImage(from: photo) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 170)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func spotifyEmbedURL(_ song: String?) -> URL? {
@@ -2040,7 +2107,7 @@ struct StatsView: View {
                     .foregroundStyle(store.theme.muted)
             }
 
-            Text("連続記録 \(store.streak(for: person.id))日 ／ \(CalendarStore.nextMilestoneText(DateKit.daysSince(person.since)))")
+            Text("連続記録 \(store.streak(for: person.id))日 ／ \(CalendarStore.nextMilestoneText(DateKit.daysSince(person.since), step: store.data.settings.mileStep))")
                 .font(.system(.caption, design: .rounded))
                 .foregroundStyle(store.theme.muted)
 
@@ -2122,6 +2189,7 @@ struct DashView: View {
                         widgetCard(widget)
                     }
                     liveActivityCard
+                    widgetLinkCard
                     if !missing.isEmpty {
                         HStack(spacing: 8) {
                             ForEach(missing, id: \.self) { widget in
@@ -2189,12 +2257,48 @@ struct DashView: View {
         .onAppear { laActive = !Activity<DaysActivityAttributes>.activities.isEmpty }
     }
 
+    private var widgetLinkCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("ウィジェット連携（確認用）")
+                .font(.system(.caption, design: .rounded).weight(.bold))
+                .foregroundStyle(store.theme.muted)
+            diagRow("付与グループ", SharedStore.provisionedGroupIDs().first ?? "なし")
+            diagRow("共有フォルダ", SharedStore.fileURL != nil ? "OK" : "取得できず")
+            diagRow("最終書込み", lastWidgetWriteText)
+        }
+        .padding(16)
+        .cardStyle()
+    }
+
+    private func diagRow(_ label: String, _ value: String) -> some View {
+        HStack(spacing: 8) {
+            Text(label)
+                .font(.system(.caption, design: .rounded).weight(.semibold))
+                .foregroundStyle(store.theme.sub)
+            Spacer()
+            Text(value)
+                .font(.system(.caption, design: .rounded))
+                .foregroundStyle(store.theme.text)
+                .lineLimit(2)
+        }
+    }
+
+    private var lastWidgetWriteText: String {
+        let ud = UserDefaults.standard
+        guard let at = ud.object(forKey: "kataomoi-widget-write-at") as? Double else { return "まだ" }
+        let ok = ud.string(forKey: "kataomoi-widget-write") ?? "ng"
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ja_JP")
+        f.dateFormat = "HH:mm:ss"
+        return "\(f.string(from: Date(timeIntervalSince1970: at))) \(ok == "ok" ? "成功" : "失敗")"
+    }
+
     private func startLiveActivity() {
         guard let person = store.data.persons.first else { return }
         let days = DateKit.daysSince(person.since)
         let attributes = DaysActivityAttributes(personName: person.name, colorHex: person.color)
         let content = ActivityContent(
-            state: DaysActivityAttributes.ContentState(days: days, milestoneText: CalendarStore.nextMilestoneText(days)),
+            state: DaysActivityAttributes.ContentState(days: days, milestoneText: CalendarStore.nextMilestoneText(days, step: store.data.settings.mileStep)),
             staleDate: Calendar.current.startOfDay(for: Date()).addingTimeInterval(24 * 3600)
         )
         do {
@@ -2930,6 +3034,7 @@ struct SettingsView: View {
                 personsSection
                 dashSection
                 spotifySection
+                aiSection
                 dataSection
             }
             .fontDesign(.rounded)
@@ -3015,6 +3120,13 @@ struct SettingsView: View {
         )
     }
 
+    private func intBinding(_ keyPath: WritableKeyPath<AppSettings, Int>) -> Binding<Int> {
+        Binding(
+            get: { store.data.settings[keyPath: keyPath] },
+            set: { value in store.updateSettings { $0[keyPath: keyPath] = value } }
+        )
+    }
+
     private var displaySection: some View {
         Section("表示") {
             Toggle("人のアイコンを表示", isOn: boolBinding(\.icons))
@@ -3092,7 +3204,17 @@ struct SettingsView: View {
 
     private var milestoneSection: some View {
         Section("記念日") {
-            Toggle("記念日のお祝い（100日・200日・1年など）", isOn: boolBinding(\.mileEvent))
+            Toggle("記念日のお祝い", isOn: boolBinding(\.mileEvent))
+            Picker("日数の刻み", selection: intBinding(\.mileStep)) {
+                Text("10日ごと").tag(10)
+                Text("30日ごと").tag(30)
+                Text("50日ごと").tag(50)
+                Text("100日ごと").tag(100)
+                Text("200日ごと").tag(200)
+                Text("1年ごと").tag(365)
+            }
+        } footer: {
+            Text("次の記念日は、この刻みと1年ごとの節目で数えます。")
         }
     }
 
@@ -3150,6 +3272,24 @@ struct SettingsView: View {
             Text("Spotify連携")
         } footer: {
             Text("再生中の曲を表示するには、Spotifyの開発者ダッシュボードで、このアプリのリダイレクトURIに「kataomoi://callback」を追加してください。各人の曲のURLは「登録した人」から設定できます。")
+        }
+    }
+
+    private var aiSection: some View {
+        Section {
+            TextField("APIキー", text: Binding(
+                get: { store.data.settings.aiKey },
+                set: { value in store.updateSettings { $0.aiKey = value.trimmingCharacters(in: .whitespaces) } }
+            ))
+            .font(.system(.subheadline, design: .rounded))
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+            Link("Google AI Studioで無料キーを取る", destination: URL(string: "https://aistudio.google.com/apikey")!)
+                .font(.system(.subheadline, design: .rounded))
+        } header: {
+            Text("AI相談（Gemini）")
+        } footer: {
+            Text("「相談」タブの恋愛相談に使います。キーは無料で取得できます。相談の内容はGoogleのサーバーに送られるので、住所などの個人情報は書かないでください。")
         }
     }
 
@@ -3517,5 +3657,236 @@ struct CelebrationView: View {
                     .rotationEffect(.degrees(Double((i * 53) % 360)))
             }
         }
+    }
+}
+
+// MARK: - AI love advice (Gemini free tier)
+
+struct AdviceMessage: Identifiable {
+    let id = UUID()
+    var role: String
+    var text: String
+}
+
+struct AdviceView: View {
+    @EnvironmentObject var store: CalendarStore
+    @State private var messages: [AdviceMessage] = []
+    @State private var input = ""
+    @State private var sending = false
+    @State private var errorText: String?
+    @State private var keyDraft = ""
+
+    private var apiKey: String { store.data.settings.aiKey }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                if apiKey.isEmpty {
+                    setupView
+                } else {
+                    messageList
+                    if let errorText {
+                        Text(errorText)
+                            .font(.system(.caption, design: .rounded))
+                            .foregroundStyle(.red)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                    }
+                    inputBar
+                }
+            }
+            .background(store.theme.cream.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    private var setupView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("AI恋愛相談")
+                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .foregroundStyle(store.theme.text)
+                Text("GoogleのGemini（無料枠）を使って、登録した人の情報を踏まえた恋愛相談ができます。まず無料のAPIキーを入れてください。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+                Link("Google AI Studioで無料キーを取る", destination: URL(string: "https://aistudio.google.com/apikey")!)
+                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                TextField("APIキーを貼り付け", text: $keyDraft)
+                    .font(.system(.subheadline, design: .rounded))
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .padding(10)
+                    .background(store.theme.card, in: RoundedRectangle(cornerRadius: 10))
+                Button("保存") {
+                    store.updateSettings { $0.aiKey = keyDraft.trimmingCharacters(in: .whitespaces) }
+                }
+                .buttonStyle(.glass)
+                .disabled(keyDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+                Text("相談の内容はGoogleのサーバーに送られます。住所などの個人情報は書かないでください。キーは設定タブからも変更できます。")
+                    .font(.system(.caption, design: .rounded))
+                    .foregroundStyle(store.theme.muted)
+            }
+            .padding(16)
+        }
+    }
+
+    private var messageList: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 10) {
+                    if messages.isEmpty {
+                        bubble(role: "model", text: greetingText)
+                    }
+                    ForEach(messages) { message in
+                        bubble(role: message.role, text: message.text)
+                            .id(message.id)
+                    }
+                    if sending {
+                        HStack {
+                            Text("考え中…")
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundStyle(store.theme.muted)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(store.theme.card, in: RoundedRectangle(cornerRadius: 14))
+                            Spacer()
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .onChange(of: messages.count) { _, _ in
+                if let last = messages.last { proxy.scrollTo(last.id, anchor: .bottom) }
+            }
+        }
+    }
+
+    private var greetingText: String {
+        if let person = store.data.persons.first {
+            return "こんにちは。\(person.name)のこと、片思い中のもやもや、なんでも話してね。最近の記録も踏まえて一緒に考えるよ。"
+        }
+        return "こんにちは。恋愛のこと、なんでも話してね。"
+    }
+
+    private func bubble(role: String, text: String) -> some View {
+        HStack {
+            if role == "user" { Spacer(minLength: 40) }
+            Text(text)
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundStyle(role == "user" ? Color.white : store.theme.text)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(role == "user" ? store.theme.deep : store.theme.card, in: RoundedRectangle(cornerRadius: 16))
+            if role != "user" { Spacer(minLength: 40) }
+        }
+    }
+
+    private var inputBar: some View {
+        HStack(spacing: 8) {
+            TextField("相談してみる", text: $input, axis: .vertical)
+                .font(.system(.subheadline, design: .rounded))
+                .lineLimit(1...4)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(store.theme.card, in: RoundedRectangle(cornerRadius: 18))
+            Button {
+                send()
+            } label: {
+                Image(systemName: "paperplane.fill")
+                    .font(.system(size: 15))
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(store.theme.deep, in: Circle())
+            }
+            .disabled(sending || input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            if !messages.isEmpty {
+                Button {
+                    messages = []
+                    errorText = nil
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 14))
+                        .foregroundStyle(store.theme.muted)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+
+    private func send() {
+        let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, !sending else { return }
+        input = ""
+        errorText = nil
+        messages.append(AdviceMessage(role: "user", text: text))
+        sending = true
+        let history = messages
+        let key = apiKey
+        let system = systemPrompt()
+        Task {
+            do {
+                let reply = try await GeminiClient.send(apiKey: key, system: system, history: history)
+                messages.append(AdviceMessage(role: "model", text: reply))
+            } catch {
+                errorText = "送信できませんでした: \(error.localizedDescription)"
+            }
+            sending = false
+        }
+    }
+
+    private func systemPrompt() -> String {
+        var context = "相手はまだ登録されていません。一般的な恋愛相談として乗ってください。"
+        if let person = store.data.persons.first {
+            var lines = [
+                "相手の名前: \(person.name)",
+                "好きになってから: \(DateKit.daysSince(person.since))日",
+                "関係: \(person.rel ?? "片思い")"
+            ]
+            let es = store.entries(for: person.id)
+            if let last = es.last { lines.append("最新の好き度（100点満点）: \(last.like)") }
+            let diaries = es.suffix(3).map { $0.text }.filter { !$0.isEmpty }
+            if !diaries.isEmpty { lines.append("最近の日記: " + diaries.joined(separator: " / ")) }
+            for field in person.fields where !field.value.isEmpty {
+                lines.append("\(field.label): \(field.value)")
+            }
+            if let b = person.birthday { lines.append("相手の誕生日: \(b)") }
+            context = lines.joined(separator: "\n")
+        }
+        return """
+        あなたは恋愛相談に乗る、やさしくて聞き上手な相談相手です。ユーザーの気持ちをまず受け止めて、決めつけずに一緒に考えてください。相手の気持ちを断定しないでください。返事は長くしすぎず、会話のキャッチボールを大切にしてください。日本語で、やわらかい口調で話してください。
+
+        【ユーザーの状況】
+        \(context)
+        """
+    }
+}
+
+enum GeminiClient {
+    static func send(apiKey: String, system: String, history: [AdviceMessage]) async throws -> String {
+        let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")!
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
+        let contents: [[String: Any]] = history.map { ["role": $0.role, "parts": [["text": $0.text]]] }
+        let body: [String: Any] = [
+            "system_instruction": ["parts": [["text": system]]],
+            "contents": contents,
+            "generationConfig": ["temperature": 0.85, "maxOutputTokens": 1200]
+        ]
+        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let (data, _) = try await URLSession.shared.data(for: req)
+        let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        if let candidates = obj?["candidates"] as? [[String: Any]],
+           let content = candidates.first?["content"] as? [String: Any],
+           let parts = content["parts"] as? [[String: Any]],
+           let text = parts.compactMap({ $0["text"] as? String }).first, !text.isEmpty {
+            return text
+        }
+        if let err = obj?["error"] as? [String: Any], let msg = err["message"] as? String {
+            throw NSError(domain: "Gemini", code: 0, userInfo: [NSLocalizedDescriptionKey: msg])
+        }
+        throw NSError(domain: "Gemini", code: -1, userInfo: [NSLocalizedDescriptionKey: "応答を読み取れませんでした"])
     }
 }

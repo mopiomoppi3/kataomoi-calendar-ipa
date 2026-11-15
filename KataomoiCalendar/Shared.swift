@@ -6,13 +6,80 @@ import ActivityKit
 // (KataomoiWidget). Both targets compile this file.
 
 enum SharedStore {
-    static let appGroup = "group.com.moppi.kataomoi"
+    static let fallbackGroupID = "group.com.moppi.kataomoi"
     static let fileName = "widget-data.json"
+
+    /// App groups actually granted to THIS bundle, read from its embedded
+    /// provisioning profile. Sideload signers may grant the group under the
+    /// requested ID, a rewritten ID, or not at all - so never trust the
+    /// hardcoded ID alone.
+    static func provisionedGroupIDs() -> [String] {
+        guard let path = Bundle.main.path(forResource: "embedded", ofType: "mobileprovision"),
+              let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else { return [] }
+        let text = String(decoding: data, as: UTF8.self)
+        guard let start = text.range(of: "<?xml"),
+              let end = text.range(of: "</plist>", range: start.lowerBound..<text.endIndex) else { return [] }
+        let xml = String(text[start.lowerBound..<end.upperBound])
+        guard let xmlData = xml.data(using: .utf8),
+              let plist = try? PropertyListSerialization.propertyList(from: xmlData, options: [], format: nil) as? [String: Any],
+              let entitlements = plist["Entitlements"] as? [String: Any],
+              let groups = entitlements["com.apple.security.application-groups"] as? [String] else { return [] }
+        return groups
+    }
+
+    private static var candidateIDs: [String] {
+        var ids = provisionedGroupIDs()
+        if !ids.contains(fallbackGroupID) { ids.append(fallbackGroupID) }
+        return ids
+    }
+
+    static var groupID: String { candidateIDs.first ?? fallbackGroupID }
 
     static var fileURL: URL? {
         FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: appGroup)?
+            .containerURL(forSecurityApplicationGroupIdentifier: groupID)?
             .appendingPathComponent(fileName)
+    }
+
+    static var allFileURLs: [URL] {
+        candidateIDs.compactMap {
+            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: $0)?
+                .appendingPathComponent(fileName)
+        }
+    }
+
+    enum LoadStatus {
+        case ok           // snapshot file read and decoded
+        case noGroup      // provisioning profile grants no app group
+        case noContainer  // group named but its container is unavailable
+        case noFile       // container reachable but no snapshot written yet
+        case decodeError  // snapshot file exists but cannot be decoded
+
+        var message: String {
+            switch self {
+            case .ok: return "アプリで人を登録してね"
+            case .noGroup: return "連携エラー: グループ未付与"
+            case .noContainer: return "連携エラー: 共有フォルダ不可"
+            case .noFile: return "アプリを開いてね"
+            case .decodeError: return "連携エラー: データ読込"
+            }
+        }
+    }
+
+    static func loadSnapshot() -> (snapshot: WidgetSnapshot, status: LoadStatus) {
+        var sawContainer = false
+        for url in allFileURLs {
+            sawContainer = true
+            guard FileManager.default.fileExists(atPath: url.path) else { continue }
+            guard let data = try? Data(contentsOf: url),
+                  let snapshot = try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
+            else { return (WidgetSnapshot(), .decodeError) }
+            return (snapshot, .ok)
+        }
+        if !sawContainer {
+            return (WidgetSnapshot(), provisionedGroupIDs().isEmpty ? .noGroup : .noContainer)
+        }
+        return (WidgetSnapshot(), .noFile)
     }
 }
 
@@ -32,6 +99,26 @@ struct WidgetSnapshot: Codable {
     var todos: [Todo] = []
     var phrases: [String] = []
     var updatedAt: String = ""
+    var mileStep: Int = 100
+
+    init(persons: [Person] = [], todos: [Todo] = [], phrases: [String] = [], updatedAt: String = "", mileStep: Int = 100) {
+        self.persons = persons
+        self.todos = todos
+        self.phrases = phrases
+        self.updatedAt = updatedAt
+        self.mileStep = mileStep
+    }
+
+    private enum CodingKeys: String, CodingKey { case persons, todos, phrases, updatedAt, mileStep }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        persons = try c.decodeIfPresent([Person].self, forKey: .persons) ?? []
+        todos = try c.decodeIfPresent([Todo].self, forKey: .todos) ?? []
+        phrases = try c.decodeIfPresent([String].self, forKey: .phrases) ?? []
+        updatedAt = try c.decodeIfPresent(String.self, forKey: .updatedAt) ?? ""
+        mileStep = try c.decodeIfPresent(Int.self, forKey: .mileStep) ?? 100
+    }
 }
 
 // MARK: - Live Activity attributes
@@ -86,16 +173,17 @@ enum WidgetDateKit {
 }
 
 enum WidgetMilestones {
-    static let list = [100, 200, 300, 365, 500, 730, 1000, 1095, 1500, 2000, 3000]
-
     static func label(_ m: Int) -> String {
         m % 365 == 0 && m > 0 ? "\(m / 365)年" : "\(m)日"
     }
 
-    static func nextText(_ days: Int) -> String {
-        var next = list.first(where: { $0 > days })
-        if next == nil { next = (days / 365 + 1) * 365 }
-        guard let n = next else { return "" }
+    /// Next milestone: the configured day step, with year marks (multiples
+    /// of 365) always counting as milestones too.
+    static func nextText(_ days: Int, step: Int) -> String {
+        let s = step > 0 ? step : 100
+        let byStep = (days / s + 1) * s
+        let byYear = (days / 365 + 1) * 365
+        let n = min(byStep, byYear)
         return "\(label(n))まであと\(n - days)日"
     }
 

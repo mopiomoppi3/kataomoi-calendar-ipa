@@ -11,6 +11,7 @@
         A1B2C3D4E5F60002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60012 /* SceneDelegate.swift */; };
         A1B2C3D4E5F60003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60013 /* ViewController.swift */; };
         A1B2C3D4E5F60004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60014 /* Assets.xcassets */; };
+		A1B2C3D4E5F60302 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60301 /* AppIcon.icon */; };
         A1B2C3D4E5F60005 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60015 /* index.html */; };
         A1B2C3D4E5F60201 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60202 /* InfoPlist.strings */; };
         A1B2C3D4E5F60120 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60101 /* Shared.swift */; };
@@ -33,6 +34,7 @@
         A1B2C3D4E5F60012 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
         A1B2C3D4E5F60013 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
         A1B2C3D4E5F60014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1B2C3D4E5F60301 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.icon; path = AppIcon.icon; sourceTree = "<group>"; };
         A1B2C3D4E5F60015 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
         A1B2C3D4E5F60016 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
         A1B2C3D4E5F60100 /* KataomoiWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KataomoiWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,7 +52,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-        A1B2C3D4E5F60030 /* KataomoiCalendar */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60011 /* AppDelegate.swift */, A1B2C3D4E5F60012 /* SceneDelegate.swift */, A1B2C3D4E5F60013 /* ViewController.swift */, A1B2C3D4E5F60014 /* Assets.xcassets */, A1B2C3D4E5F60015 /* index.html */, A1B2C3D4E5F60016 /* Info.plist */, A1B2C3D4E5F60101 /* Shared.swift */, A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */, A1B2C3D4E5F60202 /* InfoPlist.strings */ ); path = KataomoiCalendar; sourceTree = "<group>"; };
+        A1B2C3D4E5F60030 /* KataomoiCalendar */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60011 /* AppDelegate.swift */, A1B2C3D4E5F60012 /* SceneDelegate.swift */, A1B2C3D4E5F60013 /* ViewController.swift */, A1B2C3D4E5F60014 /* Assets.xcassets */, A1B2C3D4E5F60301 /* AppIcon.icon */, A1B2C3D4E5F60015 /* index.html */, A1B2C3D4E5F60016 /* Info.plist */, A1B2C3D4E5F60101 /* Shared.swift */, A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */, A1B2C3D4E5F60202 /* InfoPlist.strings */ ); path = KataomoiCalendar; sourceTree = "<group>"; };
         A1B2C3D4E5F60031 = {isa = PBXGroup; children = ( A1B2C3D4E5F60030 /* KataomoiCalendar */, A1B2C3D4E5F60110 /* KataomoiWidget */, A1B2C3D4E5F60032 /* Products */ ); sourceTree = "<group>"; };
         A1B2C3D4E5F60032 /* Products */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60010 /* KataomoiCalendar.app */, A1B2C3D4E5F60100 /* KataomoiWidget.appex */ ); name = Products; sourceTree = "<group>"; };
         A1B2C3D4E5F60110 /* KataomoiWidget */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60102 /* KataomoiWidget.swift */, A1B2C3D4E5F60103 /* Info.plist */, A1B2C3D4E5F60105 /* KataomoiWidget.entitlements */ ); path = KataomoiWidget; sourceTree = "<group>"; };
@@ -74,7 +76,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-        A1B2C3D4E5F60022 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60004 /* Assets.xcassets in Resources */, A1B2C3D4E5F60005 /* index.html in Resources */, A1B2C3D4E5F60201 /* InfoPlist.strings in Resources */ ); runOnlyForDeploymentPostprocessing = 0; };
+        A1B2C3D4E5F60022 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60004 /* Assets.xcassets in Resources */, A1B2C3D4E5F60302 /* AppIcon.icon in Resources */, A1B2C3D4E5F60005 /* index.html in Resources */, A1B2C3D4E5F60201 /* InfoPlist.strings in Resources */ ); runOnlyForDeploymentPostprocessing = 0; };
         A1B2C3D4E5F60132 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 

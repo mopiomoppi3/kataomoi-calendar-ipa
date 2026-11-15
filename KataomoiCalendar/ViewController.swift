@@ -298,16 +298,34 @@ struct TodoItem: Codable, Identifiable, Equatable {
     }
 }
 
+struct PhraseItem: Codable, Identifiable, Equatable {
+    var id: String
+    var text: String
+
+    private enum CodingKeys: String, CodingKey { case id, text }
+
+    init(id: String, text: String) {
+        self.id = id; self.text = text
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        text = try c.decodeIfPresent(String.self, forKey: .text) ?? ""
+    }
+}
+
 struct CalendarData: Codable {
     var persons: [Person] = []
     var entries: [Entry] = []
     var settings: AppSettings = AppSettings()
     var todos: [TodoItem] = []
+    var phrases: [PhraseItem] = []
 
-    private enum CodingKeys: String, CodingKey { case persons, entries, settings, todos }
+    private enum CodingKeys: String, CodingKey { case persons, entries, settings, todos, phrases }
 
-    init(persons: [Person] = [], entries: [Entry] = [], settings: AppSettings = AppSettings(), todos: [TodoItem] = []) {
-        self.persons = persons; self.entries = entries; self.settings = settings; self.todos = todos
+    init(persons: [Person] = [], entries: [Entry] = [], settings: AppSettings = AppSettings(), todos: [TodoItem] = [], phrases: [PhraseItem] = []) {
+        self.persons = persons; self.entries = entries; self.settings = settings; self.todos = todos; self.phrases = phrases
     }
 
     init(from decoder: Decoder) throws {
@@ -316,6 +334,7 @@ struct CalendarData: Codable {
         entries = try c.decodeIfPresent([Entry].self, forKey: .entries) ?? []
         settings = try c.decodeIfPresent(AppSettings.self, forKey: .settings) ?? AppSettings()
         todos = try c.decodeIfPresent([TodoItem].self, forKey: .todos) ?? []
+        phrases = try c.decodeIfPresent([PhraseItem].self, forKey: .phrases) ?? []
     }
 }
 
@@ -328,6 +347,7 @@ struct BackupFile: Codable {
     var entries: [Entry]
     var settings: AppSettings?
     var todos: [TodoItem]?
+    var phrases: [PhraseItem]?
 }
 
 // MARK: - Themes
@@ -513,7 +533,15 @@ final class CalendarStore: ObservableObject {
         themeKey = AppThemeKey(rawValue: savedTheme) ?? .pink
         customColorHex = UserDefaults.standard.string(forKey: "kataomoi-theme-custom") ?? "#e8698a"
         calendarPersonID = loaded.persons.first?.id
-        writeWidgetSnapshot()
+        var introducedPhrase = false
+        if !UserDefaults.standard.bool(forKey: "kataomoi-phrase-introduced") {
+            if !data.settings.widgets.contains("phrase") {
+                data.settings.widgets.append("phrase")
+                introducedPhrase = true
+            }
+            UserDefaults.standard.set(true, forKey: "kataomoi-phrase-introduced")
+        }
+        if introducedPhrase { save() } else { writeWidgetSnapshot() }
     }
 
     func save() {
@@ -529,6 +557,7 @@ final class CalendarStore: ObservableObject {
         let snapshot = WidgetSnapshot(
             persons: data.persons.map { .init(name: $0.name, since: $0.since, color: $0.color, rel: $0.rel ?? "片思い", birthday: $0.birthday) },
             todos: data.todos.map { .init(text: $0.text, done: $0.done) },
+            phrases: data.phrases.map { $0.text },
             updatedAt: DateKit.todayString()
         )
         if let url = SharedStore.fileURL, let encoded = try? JSONEncoder().encode(snapshot) {
@@ -567,6 +596,7 @@ final class CalendarStore: ObservableObject {
     }
 
     func addPerson(name: String, since: String, met: String?, color: String, rel: String, birthday: String?, icon: String?, song: String? = nil, fields: [CustomField] = []) {
+        guard data.persons.isEmpty else { return }
         let p = Person(id: String(Int(Date().timeIntervalSince1970 * 1000)),
                        name: name, since: since, met: met, color: color, rel: rel, icon: icon, song: song, birthday: birthday, fields: fields)
         data.persons.append(p)
@@ -589,6 +619,18 @@ final class CalendarStore: ObservableObject {
 
     func deleteTodo(_ id: String) {
         data.todos.removeAll { $0.id == id }
+        save()
+    }
+
+    func addPhrase(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        data.phrases.append(PhraseItem(id: String(Int(Date().timeIntervalSince1970 * 1000)), text: trimmed))
+        save()
+    }
+
+    func deletePhrase(_ id: String) {
+        data.phrases.removeAll { $0.id == id }
         save()
     }
 
@@ -723,7 +765,7 @@ final class CalendarStore: ObservableObject {
                                 exportedAt: ISO8601DateFormatter().string(from: Date()),
                                 theme: themeKey.rawValue,
                                 persons: data.persons, entries: data.entries,
-                                settings: data.settings, todos: data.todos)
+                                settings: data.settings, todos: data.todos, phrases: data.phrases)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let raw = try encoder.encode(backup)
@@ -738,7 +780,7 @@ final class CalendarStore: ObservableObject {
     func importBackup(_ backup: BackupFile, replace: Bool) {
         if replace {
             data = CalendarData(persons: backup.persons, entries: backup.entries,
-                                settings: backup.settings ?? AppSettings(), todos: backup.todos ?? [])
+                                settings: backup.settings ?? AppSettings(), todos: backup.todos ?? [], phrases: backup.phrases ?? [])
             if let t = backup.theme, let key = AppThemeKey(rawValue: t) { themeKey = key }
             calendarPersonID = data.persons.first?.id
         } else {
@@ -748,6 +790,8 @@ final class CalendarStore: ObservableObject {
             data.entries.append(contentsOf: backup.entries.filter { !entryIDs.contains($0.id) })
             let todoIDs = Set(data.todos.map { $0.id })
             data.todos.append(contentsOf: (backup.todos ?? []).filter { !todoIDs.contains($0.id) })
+            let phraseIDs = Set(data.phrases.map { $0.id })
+            data.phrases.append(contentsOf: (backup.phrases ?? []).filter { !phraseIDs.contains($0.id) })
         }
         save()
     }
@@ -951,10 +995,11 @@ struct HomeView: View {
                         }
                     }
 
-                    Button {
-                        showAdd = true
-                    } label: {
-                        Text("＋ 新しく追加")
+                    if store.data.persons.isEmpty {
+                        Button {
+                            showAdd = true
+                        } label: {
+                            Text("＋ 新しく追加")
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(store.theme.deep)
                             .frame(maxWidth: .infinity)
@@ -963,8 +1008,9 @@ struct HomeView: View {
                                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                                     .strokeBorder(store.theme.blush, style: StrokeStyle(lineWidth: 1.6, dash: [6, 5]))
                             )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 14)
@@ -2062,7 +2108,7 @@ struct DashView: View {
 
     private var widgets: [String] { store.data.settings.widgets }
     private var missing: [String] {
-        ["weather", "music", "todo"].filter { !widgets.contains($0) }
+        ["weather", "music", "todo", "phrase"].filter { !widgets.contains($0) }
     }
 
     var body: some View {
@@ -2101,7 +2147,7 @@ struct DashView: View {
     }
 
     private func widgetLabel(_ widget: String) -> String {
-        widget == "weather" ? "天気" : widget == "music" ? "ミュージック" : "ToDo"
+        widget == "weather" ? "天気" : widget == "music" ? "ミュージック" : widget == "todo" ? "ToDo" : "言葉"
     }
 
     private var liveActivityCard: some View {
@@ -2188,6 +2234,8 @@ struct DashView: View {
                 WeatherWidget(model: weather)
             } else if widget == "todo" {
                 TodoCard()
+            } else if widget == "phrase" {
+                PhraseCard()
             } else {
                 MusicWidget(goSettings: goSettings)
             }
@@ -2246,6 +2294,50 @@ struct TodoCard: View {
 
     private func add() {
         store.addTodo(newText)
+        newText = ""
+    }
+}
+
+struct PhraseCard: View {
+    @EnvironmentObject var store: CalendarStore
+    @State private var newText = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if store.data.phrases.isEmpty {
+                Text("言葉はまだありません。下から追加できます。")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(store.theme.sub)
+            }
+            ForEach(store.data.phrases) { phrase in
+                HStack(spacing: 10) {
+                    Text("「\(phrase.text)」")
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .foregroundStyle(store.theme.text)
+                    Spacer()
+                    Button {
+                        store.deletePhrase(phrase.id)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(store.theme.muted)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            HStack(spacing: 8) {
+                TextField("心に決めたい言葉", text: $newText)
+                    .font(.system(.subheadline, design: .rounded))
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { add() }
+                Button("追加") { add() }
+                    .buttonStyle(.glass)
+            }
+        }
+    }
+
+    private func add() {
+        store.addPhrase(newText)
         newText = ""
     }
 }
@@ -3041,6 +3133,7 @@ struct SettingsView: View {
             Toggle("天気ウィジェット", isOn: widgetBinding("weather"))
             Toggle("ミュージックウィジェット", isOn: widgetBinding("music"))
             Toggle("ToDoウィジェット", isOn: widgetBinding("todo"))
+            Toggle("言葉ウィジェット", isOn: widgetBinding("phrase"))
         }
     }
 

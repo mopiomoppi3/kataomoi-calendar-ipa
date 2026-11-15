@@ -30,6 +30,7 @@ struct WidgetSnapshot: Codable {
     }
     var persons: [Person] = []
     var todos: [Todo] = []
+    var phrases: [String] = []
     var updatedAt: String = ""
 }
 

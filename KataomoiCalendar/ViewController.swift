@@ -2,8 +2,6 @@ import UIKit
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
-import ActivityKit
-import WidgetKit
 import PhotosUI
 import UniformTypeIdentifiers
 import CoreLocation
@@ -250,35 +248,15 @@ struct AppSettings: Codable, Hashable {
     }
 }
 
-struct TodoItem: Codable, Identifiable, Equatable {
-    var id: String
-    var text: String
-    var done: Bool = false
-
-    private enum CodingKeys: String, CodingKey { case id, text, done }
-
-    init(id: String, text: String, done: Bool = false) {
-        self.id = id; self.text = text; self.done = done
-    }
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        id = try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
-        text = try c.decodeIfPresent(String.self, forKey: .text) ?? ""
-        done = try c.decodeIfPresent(Bool.self, forKey: .done) ?? false
-    }
-}
-
 struct CalendarData: Codable {
     var persons: [Person] = []
     var entries: [Entry] = []
     var settings: AppSettings = AppSettings()
-    var todos: [TodoItem] = []
 
-    private enum CodingKeys: String, CodingKey { case persons, entries, settings, todos }
+    private enum CodingKeys: String, CodingKey { case persons, entries, settings }
 
-    init(persons: [Person] = [], entries: [Entry] = [], settings: AppSettings = AppSettings(), todos: [TodoItem] = []) {
-        self.persons = persons; self.entries = entries; self.settings = settings; self.todos = todos
+    init(persons: [Person] = [], entries: [Entry] = [], settings: AppSettings = AppSettings()) {
+        self.persons = persons; self.entries = entries; self.settings = settings
     }
 
     init(from decoder: Decoder) throws {
@@ -286,7 +264,6 @@ struct CalendarData: Codable {
         persons = try c.decodeIfPresent([Person].self, forKey: .persons) ?? []
         entries = try c.decodeIfPresent([Entry].self, forKey: .entries) ?? []
         settings = try c.decodeIfPresent(AppSettings.self, forKey: .settings) ?? AppSettings()
-        todos = try c.decodeIfPresent([TodoItem].self, forKey: .todos) ?? []
     }
 }
 
@@ -298,7 +275,6 @@ struct BackupFile: Codable {
     var persons: [Person]
     var entries: [Entry]
     var settings: AppSettings?
-    var todos: [TodoItem]?
 }
 
 // MARK: - Themes
@@ -454,19 +430,6 @@ final class CalendarStore: ObservableObject {
             try? encoded.write(to: fileURL, options: [.atomic])
         }
         UserDefaults.standard.set(themeKey.rawValue, forKey: "kataomoi-theme")
-        writeWidgetSnapshot()
-    }
-
-    private func writeWidgetSnapshot() {
-        let snapshot = WidgetSnapshot(
-            persons: data.persons.map { .init(name: $0.name, since: $0.since, color: $0.color, rel: $0.rel ?? "片思い", birthday: $0.birthday) },
-            todos: data.todos.map { .init(text: $0.text, done: $0.done) },
-            updatedAt: DateKit.todayString()
-        )
-        if let url = SharedStore.fileURL, let encoded = try? JSONEncoder().encode(snapshot) {
-            try? encoded.write(to: url, options: [.atomic])
-        }
-        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func setTheme(_ key: AppThemeKey) {
@@ -503,24 +466,6 @@ final class CalendarStore: ObservableObject {
                        name: name, since: since, met: met, color: color, rel: rel, icon: icon, birthday: birthday)
         data.persons.append(p)
         calendarPersonID = p.id
-        save()
-    }
-
-    func addTodo(_ text: String) {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        data.todos.append(TodoItem(id: String(Int(Date().timeIntervalSince1970 * 1000)), text: trimmed))
-        save()
-    }
-
-    func toggleTodo(_ id: String) {
-        guard let i = data.todos.firstIndex(where: { $0.id == id }) else { return }
-        data.todos[i].done.toggle()
-        save()
-    }
-
-    func deleteTodo(_ id: String) {
-        data.todos.removeAll { $0.id == id }
         save()
     }
 
@@ -655,7 +600,7 @@ final class CalendarStore: ObservableObject {
                                 exportedAt: ISO8601DateFormatter().string(from: Date()),
                                 theme: themeKey.rawValue,
                                 persons: data.persons, entries: data.entries,
-                                settings: data.settings, todos: data.todos)
+                                settings: data.settings)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         let raw = try encoder.encode(backup)
@@ -670,7 +615,7 @@ final class CalendarStore: ObservableObject {
     func importBackup(_ backup: BackupFile, replace: Bool) {
         if replace {
             data = CalendarData(persons: backup.persons, entries: backup.entries,
-                                settings: backup.settings ?? AppSettings(), todos: backup.todos ?? [])
+                                settings: backup.settings ?? AppSettings())
             if let t = backup.theme, let key = AppThemeKey(rawValue: t) { themeKey = key }
             calendarPersonID = data.persons.first?.id
         } else {
@@ -678,8 +623,6 @@ final class CalendarStore: ObservableObject {
             let entryIDs = Set(data.entries.map { $0.id })
             data.persons.append(contentsOf: backup.persons.filter { !personIDs.contains($0.id) })
             data.entries.append(contentsOf: backup.entries.filter { !entryIDs.contains($0.id) })
-            let todoIDs = Set(data.todos.map { $0.id })
-            data.todos.append(contentsOf: (backup.todos ?? []).filter { !todoIDs.contains($0.id) })
         }
         save()
     }
@@ -1882,11 +1825,10 @@ struct DashView: View {
     @EnvironmentObject var store: CalendarStore
     let goSettings: () -> Void
     @StateObject private var weather = WeatherModel()
-    @State private var laActive = false
 
     private var widgets: [String] { store.data.settings.widgets }
     private var missing: [String] {
-        ["weather", "music", "todo"].filter { !widgets.contains($0) }
+        ["weather", "music"].filter { !widgets.contains($0) }
     }
 
     var body: some View {
@@ -1899,14 +1841,13 @@ struct DashView: View {
                     ForEach(widgets, id: \.self) { widget in
                         widgetCard(widget)
                     }
-                    liveActivityCard
                     if !missing.isEmpty {
                         HStack(spacing: 8) {
                             ForEach(missing, id: \.self) { widget in
                                 Button {
                                     store.updateSettings { $0.widgets.append(widget) }
                                 } label: {
-                                    Text("＋ \(widgetLabel(widget))")
+                                    Text("＋ \(widget == "weather" ? "天気" : "ミュージック")")
                                 }
                                 .buttonStyle(.glass)
                             }
@@ -1924,78 +1865,10 @@ struct DashView: View {
         }
     }
 
-    private func widgetLabel(_ widget: String) -> String {
-        widget == "weather" ? "天気" : widget == "music" ? "ミュージック" : "ToDo"
-    }
-
-    private var liveActivityCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("ライブアクティビティ")
-                .font(.system(.caption, design: .rounded).weight(.bold))
-                .foregroundStyle(store.theme.muted)
-            if let person = store.data.persons.first {
-                HStack(spacing: 10) {
-                    PersonAvatar(person: person, size: 36)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("\(person.name)さん")
-                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                            .foregroundStyle(store.theme.text)
-                        Text("好きになって \(DateKit.daysSince(person.since)) 日目")
-                            .font(.system(.caption, design: .rounded))
-                            .foregroundStyle(store.theme.muted)
-                    }
-                    Spacer()
-                    if laActive {
-                        Button("停止") { stopLiveActivity() }
-                            .buttonStyle(.glass)
-                    } else {
-                        Button("開始") { startLiveActivity() }
-                            .buttonStyle(.glass)
-                    }
-                }
-                Text("ロック画面とDynamic Islandに日数を表示します。仕様で最大8時間で自動終了します。")
-                    .font(.system(.caption2, design: .rounded))
-                    .foregroundStyle(store.theme.muted)
-            } else {
-                Text("人を登録すると使えます。")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(store.theme.sub)
-            }
-        }
-        .padding(16)
-        .cardStyle()
-        .onAppear { laActive = !Activity<DaysActivityAttributes>.activities.isEmpty }
-    }
-
-    private func startLiveActivity() {
-        guard let person = store.data.persons.first else { return }
-        let days = DateKit.daysSince(person.since)
-        let attributes = DaysActivityAttributes(personName: person.name, colorHex: person.color)
-        let content = ActivityContent(
-            state: DaysActivityAttributes.ContentState(days: days, milestoneText: CalendarStore.nextMilestoneText(days)),
-            staleDate: Calendar.current.startOfDay(for: Date()).addingTimeInterval(24 * 3600)
-        )
-        do {
-            _ = try Activity.request(attributes: attributes, content: content)
-            laActive = true
-        } catch {
-            laActive = false
-        }
-    }
-
-    private func stopLiveActivity() {
-        Task {
-            for activity in Activity<DaysActivityAttributes>.activities {
-                await activity.end(nil, dismissalPolicy: .immediate)
-            }
-            laActive = false
-        }
-    }
-
     private func widgetCard(_ widget: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(widgetLabel(widget))
+                Text(widget == "weather" ? "天気" : "ミュージック")
                     .font(.system(.caption, design: .rounded).weight(.bold))
                     .foregroundStyle(store.theme.muted)
                 Spacer()
@@ -2010,67 +1883,12 @@ struct DashView: View {
             }
             if widget == "weather" {
                 WeatherWidget(model: weather)
-            } else if widget == "todo" {
-                TodoCard()
             } else {
                 MusicWidget(goSettings: goSettings)
             }
         }
         .padding(16)
         .cardStyle()
-    }
-}
-
-struct TodoCard: View {
-    @EnvironmentObject var store: CalendarStore
-    @State private var newText = ""
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if store.data.todos.isEmpty {
-                Text("ToDoはまだありません。下から追加できます。")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(store.theme.sub)
-            }
-            ForEach(store.data.todos) { todo in
-                HStack(spacing: 10) {
-                    Button {
-                        store.toggleTodo(todo.id)
-                    } label: {
-                        Image(systemName: todo.done ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 19))
-                            .foregroundStyle(todo.done ? store.theme.rose : store.theme.muted)
-                    }
-                    .buttonStyle(.plain)
-                    Text(todo.text)
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(todo.done ? store.theme.muted : store.theme.text)
-                        .strikethrough(todo.done)
-                    Spacer()
-                    Button {
-                        store.deleteTodo(todo.id)
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(store.theme.muted)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            HStack(spacing: 8) {
-                TextField("新しいToDo", text: $newText)
-                    .font(.system(.subheadline, design: .rounded))
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit { add() }
-                Button("追加") { add() }
-                    .buttonStyle(.glass)
-            }
-        }
-    }
-
-    private func add() {
-        store.addTodo(newText)
-        newText = ""
     }
 }
 
@@ -2827,7 +2645,6 @@ struct SettingsView: View {
         Section("ダッシュボード") {
             Toggle("天気ウィジェット", isOn: widgetBinding("weather"))
             Toggle("ミュージックウィジェット", isOn: widgetBinding("music"))
-            Toggle("ToDoウィジェット", isOn: widgetBinding("todo"))
         }
     }
 

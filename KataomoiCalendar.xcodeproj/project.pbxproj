@@ -12,6 +12,7 @@
         A1B2C3D4E5F60003 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60013 /* ViewController.swift */; };
         A1B2C3D4E5F60004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60014 /* Assets.xcassets */; };
         A1B2C3D4E5F60005 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60015 /* index.html */; };
+        A1B2C3D4E5F60201 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60202 /* InfoPlist.strings */; };
         A1B2C3D4E5F60120 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60101 /* Shared.swift */; };
         A1B2C3D4E5F60121 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60101 /* Shared.swift */; };
         A1B2C3D4E5F60122 /* KataomoiWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60102 /* KataomoiWidget.swift */; };
@@ -40,6 +41,7 @@
         A1B2C3D4E5F60103 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
         A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KataomoiCalendar.entitlements; sourceTree = "<group>"; };
         A1B2C3D4E5F60105 /* KataomoiWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KataomoiWidget.entitlements; sourceTree = "<group>"; };
+        A1B2C3D4E5F60203 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,11 +50,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-        A1B2C3D4E5F60030 /* KataomoiCalendar */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60011 /* AppDelegate.swift */, A1B2C3D4E5F60012 /* SceneDelegate.swift */, A1B2C3D4E5F60013 /* ViewController.swift */, A1B2C3D4E5F60014 /* Assets.xcassets */, A1B2C3D4E5F60015 /* index.html */, A1B2C3D4E5F60016 /* Info.plist */, A1B2C3D4E5F60101 /* Shared.swift */, A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */ ); path = KataomoiCalendar; sourceTree = "<group>"; };
+        A1B2C3D4E5F60030 /* KataomoiCalendar */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60011 /* AppDelegate.swift */, A1B2C3D4E5F60012 /* SceneDelegate.swift */, A1B2C3D4E5F60013 /* ViewController.swift */, A1B2C3D4E5F60014 /* Assets.xcassets */, A1B2C3D4E5F60015 /* index.html */, A1B2C3D4E5F60016 /* Info.plist */, A1B2C3D4E5F60101 /* Shared.swift */, A1B2C3D4E5F60104 /* KataomoiCalendar.entitlements */, A1B2C3D4E5F60202 /* InfoPlist.strings */ ); path = KataomoiCalendar; sourceTree = "<group>"; };
         A1B2C3D4E5F60031 = {isa = PBXGroup; children = ( A1B2C3D4E5F60030 /* KataomoiCalendar */, A1B2C3D4E5F60110 /* KataomoiWidget */, A1B2C3D4E5F60032 /* Products */ ); sourceTree = "<group>"; };
         A1B2C3D4E5F60032 /* Products */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60010 /* KataomoiCalendar.app */, A1B2C3D4E5F60100 /* KataomoiWidget.appex */ ); name = Products; sourceTree = "<group>"; };
         A1B2C3D4E5F60110 /* KataomoiWidget */ = {isa = PBXGroup; children = ( A1B2C3D4E5F60102 /* KataomoiWidget.swift */, A1B2C3D4E5F60103 /* Info.plist */, A1B2C3D4E5F60105 /* KataomoiWidget.entitlements */ ); path = KataomoiWidget; sourceTree = "<group>"; };
 /* End PBXGroup section */
+
+/* Begin PBXVariantGroup section */
+        A1B2C3D4E5F60202 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = ( A1B2C3D4E5F60203 /* ja */ ); name = InfoPlist.strings; sourceTree = "<group>"; };
+/* End PBXVariantGroup section */
 
 /* Begin PBXNativeTarget section */
         A1B2C3D4E5F60040 /* KataomoiCalendar */ = {isa = PBXNativeTarget; buildConfigurationList = A1B2C3D4E5F60060 /* Build configuration list for PBXNativeTarget "KataomoiCalendar" */; buildPhases = ( A1B2C3D4E5F60021 /* Sources */, A1B2C3D4E5F60020 /* Frameworks */, A1B2C3D4E5F60022 /* Resources */, A1B2C3D4E5F60133 /* Embed App Extensions */ ); buildRules = ( ); dependencies = ( A1B2C3D4E5F60150 /* PBXTargetDependency */ ); name = KataomoiCalendar; productName = KataomoiCalendar; productReference = A1B2C3D4E5F60010 /* KataomoiCalendar.app */; productType = "com.apple.product-type.application"; };
@@ -68,7 +74,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-        A1B2C3D4E5F60022 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60004 /* Assets.xcassets in Resources */, A1B2C3D4E5F60005 /* index.html in Resources */ ); runOnlyForDeploymentPostprocessing = 0; };
+        A1B2C3D4E5F60022 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( A1B2C3D4E5F60004 /* Assets.xcassets in Resources */, A1B2C3D4E5F60005 /* index.html in Resources */, A1B2C3D4E5F60201 /* InfoPlist.strings in Resources */ ); runOnlyForDeploymentPostprocessing = 0; };
         A1B2C3D4E5F60132 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 

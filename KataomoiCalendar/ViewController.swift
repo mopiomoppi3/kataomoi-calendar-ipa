@@ -256,13 +256,14 @@ struct AppSettings: Codable, Hashable {
     var widgets: [String] = ["weather", "music"]
     var spId: String = ""
     var aiKey: String = ""
+    var aiModel: String = "gemini-3.8-flash"
     var tabNames: [String: String] = [:]
     var tabsShow: [String: Bool] = [:]
     var mileEvent: Bool = true
     var mileStep: Int = 100
 
     private enum CodingKeys: String, CodingKey {
-        case icons, celebrate, style, dash, widgets, spId, tabNames, tabsShow, mileEvent, mileStep, aiKey
+        case icons, celebrate, style, dash, widgets, spId, tabNames, tabsShow, mileEvent, mileStep, aiKey, aiModel
     }
 
     init() {}
@@ -276,6 +277,7 @@ struct AppSettings: Codable, Hashable {
         widgets = try c.decodeIfPresent([String].self, forKey: .widgets) ?? ["weather", "music"]
         spId = try c.decodeIfPresent(String.self, forKey: .spId) ?? ""
         aiKey = try c.decodeIfPresent(String.self, forKey: .aiKey) ?? ""
+        aiModel = try c.decodeIfPresent(String.self, forKey: .aiModel) ?? "gemini-3.8-flash"
         tabNames = try c.decodeIfPresent([String: String].self, forKey: .tabNames) ?? [:]
         tabsShow = try c.decodeIfPresent([String: Bool].self, forKey: .tabsShow) ?? [:]
         mileEvent = try c.decodeIfPresent(Bool.self, forKey: .mileEvent) ?? true
@@ -3286,12 +3288,19 @@ struct SettingsView: View {
             .font(.system(.subheadline, design: .rounded))
             .autocorrectionDisabled()
             .textInputAutocapitalization(.never)
+            TextField("モデル名", text: Binding(
+                get: { store.data.settings.aiModel },
+                set: { value in store.updateSettings { $0.aiModel = value.trimmingCharacters(in: .whitespaces) } }
+            ))
+            .font(.system(.subheadline, design: .rounded))
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
             Link("Google AI Studioで無料キーを取る", destination: URL(string: "https://aistudio.google.com/apikey")!)
                 .font(.system(.subheadline, design: .rounded))
         } header: {
             Text("AI相談（Gemini）")
         } footer: {
-            Text("「相談」タブの恋愛相談に使います。キーは無料で取得できます。相談の内容はGoogleのサーバーに送られるので、住所などの個人情報は書かないでください。")
+            Text("「相談」タブの恋愛相談に使います。キーは無料で取得できます。相談の内容はGoogleのサーバーに送られるので、住所などの個人情報は書かないでください。モデルが終了したというエラーが出たら、案内された新しいモデル名を「モデル名」の欄に書き換えれば直ります。")
         }
     }
 
@@ -3825,10 +3834,11 @@ struct AdviceView: View {
         sending = true
         let history = messages
         let key = apiKey
+        let model = store.data.settings.aiModel
         let system = systemPrompt()
         Task {
             do {
-                let reply = try await GeminiClient.send(apiKey: key, system: system, history: history)
+                let reply = try await GeminiClient.send(apiKey: key, model: model, system: system, history: history)
                 messages.append(AdviceMessage(role: "model", text: reply))
             } catch {
                 errorText = "送信できませんでした: \(error.localizedDescription)"
@@ -3865,8 +3875,14 @@ struct AdviceView: View {
 }
 
 enum GeminiClient {
-    static func send(apiKey: String, system: String, history: [AdviceMessage]) async throws -> String {
-        let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")!
+    static let defaultModel = "gemini-3.8-flash"
+
+    static func send(apiKey: String, model: String, system: String, history: [AdviceMessage]) async throws -> String {
+        let trimmed = model.trimmingCharacters(in: .whitespacesAndNewlines)
+        let modelName = trimmed.isEmpty ? defaultModel : trimmed
+        guard let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(modelName):generateContent") else {
+            throw NSError(domain: "Gemini", code: -2, userInfo: [NSLocalizedDescriptionKey: "モデル名が正しくありません: \(modelName)"])
+        }
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

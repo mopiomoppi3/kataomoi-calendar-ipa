@@ -3203,7 +3203,7 @@ struct SettingsView: View {
     }
 
     private var milestoneSection: some View {
-        Section("記念日") {
+        Section {
             Toggle("記念日のお祝い", isOn: boolBinding(\.mileEvent))
             Picker("日数の刻み", selection: intBinding(\.mileStep)) {
                 Text("10日ごと").tag(10)
@@ -3213,6 +3213,8 @@ struct SettingsView: View {
                 Text("200日ごと").tag(200)
                 Text("1年ごと").tag(365)
             }
+        } header: {
+            Text("記念日")
         } footer: {
             Text("次の記念日は、この刻みと1年ごとの節目で数えます。")
         }

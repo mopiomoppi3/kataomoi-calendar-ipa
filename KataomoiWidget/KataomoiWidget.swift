@@ -15,34 +15,32 @@ struct KataomoiWidgetBundle: WidgetBundle {
 struct DaysEntry: TimelineEntry {
     let date: Date
     let snapshot: WidgetSnapshot
+    let status: SharedStore.LoadStatus
 }
 
 struct DaysProvider: TimelineProvider {
     func placeholder(in context: Context) -> DaysEntry {
-        DaysEntry(date: Date(), snapshot: sampleSnapshot())
+        DaysEntry(date: Date(), snapshot: sampleSnapshot(), status: .ok)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (DaysEntry) -> Void) {
-        completion(DaysEntry(date: Date(), snapshot: context.isPreview ? sampleSnapshot() : loadSnapshot()))
+        if context.isPreview {
+            completion(DaysEntry(date: Date(), snapshot: sampleSnapshot(), status: .ok))
+        } else {
+            let (snapshot, status) = SharedStore.loadSnapshot()
+            completion(DaysEntry(date: Date(), snapshot: snapshot, status: status))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<DaysEntry>) -> Void) {
         let now = Date()
-        let snapshot = loadSnapshot()
+        let (snapshot, status) = SharedStore.loadSnapshot()
         let midnight = Calendar.current.startOfDay(for: now).addingTimeInterval(24 * 3600)
         let entries = [
-            DaysEntry(date: now, snapshot: snapshot),
-            DaysEntry(date: midnight, snapshot: snapshot)
+            DaysEntry(date: now, snapshot: snapshot, status: status),
+            DaysEntry(date: midnight, snapshot: snapshot, status: status)
         ]
         completion(Timeline(entries: entries, policy: .atEnd))
-    }
-
-    private func loadSnapshot() -> WidgetSnapshot {
-        guard let url = SharedStore.fileURL,
-              let data = try? Data(contentsOf: url),
-              let snapshot = try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
-        else { return WidgetSnapshot() }
-        return snapshot
     }
 
     private func sampleSnapshot() -> WidgetSnapshot {
@@ -131,9 +129,16 @@ struct DaysWidgetView: View {
                     Image(systemName: "heart.fill")
                         .font(.system(size: 22))
                         .foregroundStyle(Color.pink)
-                    Text("アプリで人を登録してね")
+                    Text(entry.status.message)
                         .font(.system(.caption, design: .rounded))
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    if family != .systemSmall {
+                        Text("グループ: \(SharedStore.groupID)")
+                            .font(.system(.caption2, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
             }
         }
@@ -157,7 +162,7 @@ struct DaysWidgetView: View {
                     .font(.system(.caption, design: .rounded))
                     .foregroundStyle(.secondary)
             }
-            Text(WidgetMilestones.nextText(days))
+            Text(WidgetMilestones.nextText(days, step: snapshot.mileStep))
                 .font(.system(.caption2, design: .rounded))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -223,7 +228,7 @@ struct DaysWidgetView: View {
                     Text("\(d)日間")
                         .font(.system(.subheadline, design: .rounded).weight(.bold))
                         .foregroundStyle(colorFromHex(p.color))
-                    Text(WidgetMilestones.nextText(d))
+                    Text(WidgetMilestones.nextText(d, step: snapshot.mileStep))
                         .font(.system(.caption2, design: .rounded))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -265,11 +270,16 @@ struct DaysWidgetView: View {
     private var accessoryCircular: some View {
         ZStack {
             AccessoryWidgetBackground()
-            VStack(spacing: 0) {
-                Text("\(days)")
+            if person == nil && entry.status != .ok {
+                Text("!")
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                Text("日間")
-                    .font(.system(size: 8, design: .rounded))
+            } else {
+                VStack(spacing: 0) {
+                    Text("\(days)")
+                        .font(.system(.title3, design: .rounded).weight(.bold))
+                    Text("日間")
+                        .font(.system(size: 8, design: .rounded))
+                }
             }
         }
     }
@@ -280,13 +290,14 @@ struct DaysWidgetView: View {
                 Text("\(person.name) \(days)日間")
                     .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .lineLimit(1)
-                Text(WidgetMilestones.nextText(days))
+                Text(WidgetMilestones.nextText(days, step: snapshot.mileStep))
                     .font(.system(.caption2, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             } else {
-                Text("恋ログ")
+                Text(entry.status == .ok ? "恋ログ" : entry.status.message)
                     .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .lineLimit(1)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -295,9 +306,9 @@ struct DaysWidgetView: View {
     private var accessoryInline: some View {
         Group {
             if let person {
-                Text("\(person.name) あと\(WidgetMilestones.nextText(days).components(separatedBy: "あと").last ?? "")")
+                Text("\(person.name) あと\(WidgetMilestones.nextText(days, step: snapshot.mileStep).components(separatedBy: "あと").last ?? "")")
             } else {
-                Text("恋ログ")
+                Text(entry.status == .ok ? "恋ログ" : entry.status.message)
             }
         }
     }

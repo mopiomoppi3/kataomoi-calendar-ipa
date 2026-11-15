@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2DFBA"/>
+      <stop offset="1" stop-color="#DDBB85"/>
+    </linearGradient>
+  </defs>
+  <!-- Layer 2 (top): beige objects only. The calendar body is a frame with the panel area cut out, so the white layer underneath shows through. -->
+  <rect x="308" y="136" width="52" height="144" rx="26" fill="#B08D57"/>
+  <rect x="664" y="136" width="52" height="144" rx="26" fill="#B08D57"/>
+  <path fill="url(#g)" fill-rule="evenodd" d="M260 216 H764 A84 84 0 0 1 848 300 V780 A84 84 0 0 1 764 864 H260 A84 84 0 0 1 176 780 V300 A84 84 0 0 1 260 216 Z M280 384 H744 A52 52 0 0 1 796 436 V760 A52 52 0 0 1 744 812 H280 A52 52 0 0 1 228 760 V436 A52 52 0 0 1 280 384 Z"/>
+  <g fill="#DEC08A">
+    <circle cx="320" cy="472" r="22"/>
+    <circle cx="453" cy="472" r="22"/>
+    <circle cx="586" cy="472" r="22"/>
+    <circle cx="719" cy="472" r="22"/>
+    <circle cx="320" cy="598" r="22"/>
+    <circle cx="453" cy="598" r="22"/>
+    <circle cx="320" cy="724" r="22"/>
+    <circle cx="453" cy="724" r="22"/>
+    <circle cx="586" cy="724" r="22"/>
+    <circle cx="719" cy="724" r="22"/>
+    <circle cx="719" cy="598" r="22"/>
+  </g>
+  <circle cx="586" cy="598" r="38" fill="none" stroke="#A97A44" stroke-width="16"/>
+  <circle cx="586" cy="598" r="13" fill="#A97A44"/>
+</svg>

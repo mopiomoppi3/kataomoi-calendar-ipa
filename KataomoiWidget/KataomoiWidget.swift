@@ -49,11 +49,12 @@ struct DaysProvider: TimelineProvider {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd"
-        let since = f.string(from: Calendar.current.date(byAdding: .day, value: -502, to: Date()) ?? Date())
+        let since = f.string(from: Calendar.current.date(byAdding: .day, value: -100, to: Date()) ?? Date())
         return WidgetSnapshot(
-            persons: [.init(name: "佐久間", since: since, color: "#4a9fd4", rel: "片思い", birthday: nil)],
+            persons: [.init(name: "サンプル", since: since, color: "#4a9fd4", rel: "片思い", birthday: nil)],
             todos: [.init(text: "今日の記録をつける", done: false),
                     .init(text: "プレゼントを考える", done: false)],
+            phrases: ["心に決めた言葉"],
             updatedAt: ""
         )
     }
@@ -67,7 +68,7 @@ struct DaysWidget: Widget {
             DaysWidgetView(entry: entry)
         }
         .configurationDisplayName("恋ログ")
-        .description("好きになってからの日数と記念日、ToDoを表示します")
+        .description("好きになってからの日数と記念日、ToDoと言葉を表示します")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge,
                             .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
@@ -83,15 +84,25 @@ struct DaysWidgetView: View {
         person.map { WidgetDateKit.daysSince($0.since, on: entry.date) } ?? 0
     }
     private var openTodos: [WidgetSnapshot.Todo] { snapshot.todos.filter { !$0.done } }
+    private var phrases: [String] { snapshot.phrases }
+    private var todayPhrase: String? {
+        guard !snapshot.phrases.isEmpty else { return nil }
+        let day = Int(entry.date.timeIntervalSince1970 / 86400)
+        let count = snapshot.phrases.count
+        return snapshot.phrases[((day % count) + count) % count]
+    }
 
     var body: some View {
         switch family {
         case .accessoryCircular:
             accessoryCircular
+                .containerBackground(for: .widget) { Color.clear }
         case .accessoryRectangular:
             accessoryRectangular
+                .containerBackground(for: .widget) { Color.clear }
         case .accessoryInline:
             accessoryInline
+                .containerBackground(for: .widget) { Color.clear }
         default:
             systemView
                 .containerBackground(for: .widget) {
@@ -156,6 +167,12 @@ struct DaysWidgetView: View {
                     .foregroundStyle(colorFromHex(person.color))
                     .lineLimit(1)
             }
+            if let phrase = todayPhrase {
+                Text("「\(phrase)」")
+                    .font(.system(.caption2, design: .rounded).weight(.semibold))
+                    .foregroundStyle(colorFromHex(person.color))
+                    .lineLimit(2)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
@@ -163,19 +180,26 @@ struct DaysWidgetView: View {
     private func mediumContent(_ person: WidgetSnapshot.Person) -> some View {
         HStack(alignment: .top, spacing: 14) {
             smallContent(person)
-            if !openTodos.isEmpty {
+            if !openTodos.isEmpty || !phrases.isEmpty {
                 Divider()
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("ToDo")
-                        .font(.system(.caption2, design: .rounded).weight(.bold))
-                        .foregroundStyle(.secondary)
-                    ForEach(Array(openTodos.prefix(3).enumerated()), id: \.offset) { _, todo in
-                        HStack(spacing: 4) {
-                            Image(systemName: "circle")
-                                .font(.system(size: 8))
-                            Text(todo.text)
-                                .font(.system(.caption, design: .rounded))
-                                .lineLimit(1)
+                    if let phrase = todayPhrase {
+                        Text("「\(phrase)」")
+                            .font(.system(.caption, design: .rounded).weight(.semibold))
+                            .lineLimit(2)
+                    }
+                    if !openTodos.isEmpty {
+                        Text("ToDo")
+                            .font(.system(.caption2, design: .rounded).weight(.bold))
+                            .foregroundStyle(.secondary)
+                        ForEach(Array(openTodos.prefix(3).enumerated()), id: \.offset) { _, todo in
+                            HStack(spacing: 4) {
+                                Image(systemName: "circle")
+                                    .font(.system(size: 8))
+                                Text(todo.text)
+                                    .font(.system(.caption, design: .rounded))
+                                    .lineLimit(1)
+                            }
                         }
                     }
                 }
@@ -202,6 +226,17 @@ struct DaysWidgetView: View {
                     Text(WidgetMilestones.nextText(d))
                         .font(.system(.caption2, design: .rounded))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            if !phrases.isEmpty {
+                Divider()
+                Text("言葉")
+                    .font(.system(.caption, design: .rounded).weight(.bold))
+                    .foregroundStyle(.secondary)
+                ForEach(Array(phrases.prefix(2).enumerated()), id: \.offset) { _, phrase in
+                    Text("「\(phrase)」")
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .lineLimit(1)
                 }
             }

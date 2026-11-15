@@ -426,7 +426,7 @@ struct AppTheme {
         case .white:
             return AppTheme(key: key, rose: Color(hex: "#1c1c1e"), deep: Color(hex: "#000000"),
                             blush: Color(hex: "#d1d1d6"), petal: Color(hex: "#f2f2f7"),
-                            cream: Color.white, card: Color.white.opacity(0.96),
+                            cream: Color(hex: "#f2f2f7"), card: Color.white.opacity(0.96),
                             text: Color(hex: "#1c1c1e"), sub: Color(hex: "#5c5c60"), muted: Color(hex: "#8e8e93"))
         case .custom:
             return AppTheme.custom("#e8698a")
@@ -513,6 +513,7 @@ final class CalendarStore: ObservableObject {
         themeKey = AppThemeKey(rawValue: savedTheme) ?? .pink
         customColorHex = UserDefaults.standard.string(forKey: "kataomoi-theme-custom") ?? "#e8698a"
         calendarPersonID = loaded.persons.first?.id
+        writeWidgetSnapshot()
     }
 
     func save() {
@@ -672,7 +673,7 @@ final class CalendarStore: ObservableObject {
                 data.persons[i].mileDone = reached
                 changed = true
                 if data.settings.mileEvent {
-                    events.append("\(data.persons[i].name)さん \(Self.milestoneLabel(reached))")
+                    events.append("\(data.persons[i].name) \(Self.milestoneLabel(reached))")
                 }
             }
         }
@@ -710,7 +711,7 @@ final class CalendarStore: ObservableObject {
             guard let b = person.birthday, let bd = DateKit.date(from: b) else { return nil }
             let bc = Calendar.current.dateComponents([.month, .day], from: bd)
             let tc = Calendar.current.dateComponents([.month, .day], from: Date())
-            return (bc.month == tc.month && bc.day == tc.day) ? "\(person.name)さん" : nil
+            return (bc.month == tc.month && bc.day == tc.day) ? person.name : nil
         }
         if !names.isEmpty {
             birthdayText = "今日は \(names.joined(separator: "、")) の誕生日です"
@@ -896,10 +897,6 @@ struct CardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(store.theme.card, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(store.theme.deep.opacity(0.16), lineWidth: 1)
-            )
             .shadow(color: store.theme.deep.opacity(0.10), radius: 12, x: 0, y: 5)
     }
 }
@@ -1006,7 +1003,7 @@ struct HomeView: View {
                 }
                 Button("まだ", role: .cancel) { mutualTarget = nil }
             } message: {
-                Text(mutualTarget.map { "\($0.name)さんとの関係を「両思い」にします。" } ?? "")
+                Text(mutualTarget.map { "\($0.name)との関係を「両思い」にします。" } ?? "")
             }
         }
     }
@@ -2116,7 +2113,7 @@ struct DashView: View {
                 HStack(spacing: 10) {
                     PersonAvatar(person: person, size: 36)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("\(person.name)さん")
+                        Text(person.name)
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(store.theme.text)
                         Text("好きになって \(DateKit.daysSince(person.since)) 日目")
@@ -2846,11 +2843,7 @@ struct SettingsView: View {
             .fontDesign(.rounded)
             .scrollContentBackground(.hidden)
             .background(store.theme.cream.ignoresSafeArea())
-            .listRowBackground(
-                store.themeKey == .white || store.themeKey == .custom
-                    ? AnyView(store.theme.petal)
-                    : AnyView(store.theme.card)
-            )
+            .listRowBackground(store.theme.card)
             .toolbar(.hidden, for: .navigationBar)
             .alert("お知らせ", isPresented: Binding(
                 get: { alertText != nil }, set: { if !$0 { alertText = nil } }
@@ -3272,7 +3265,7 @@ struct PersonSettingsRow: View {
                     Button("両思いになった") { store.markMutual(person.id) }
                     Button("まだ", role: .cancel) {}
                 } message: {
-                    Text("\(person.name)さんとの関係を「両思い」にします。")
+                    Text("\(person.name)との関係を「両思い」にします。")
                 }
             }
         }
@@ -3345,7 +3338,7 @@ struct CelebrationView: View {
                     Text("両思いおめでとう")
                         .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundStyle(store.theme.deep)
-                    Text("\(celebration.person.name)さんへの想いが届きました\n片思いの期間は \(days)日")
+                    Text("\(celebration.person.name)への想いが届きました\n片思いの期間は \(days)日")
                         .font(.system(.subheadline, design: .rounded))
                         .foregroundStyle(store.theme.sub)
                         .multilineTextAlignment(.center)
